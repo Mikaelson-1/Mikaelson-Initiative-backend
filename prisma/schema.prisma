@@ -1,0 +1,154 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "mongodb"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id           String  @id @default(auto()) @map("_id") @db.ObjectId
+  username     String
+  uniqueName   String
+  email        String  @unique
+  clerkId      String  @unique
+  bio          String?
+  profileImage String?
+  coverImage   String?
+
+  createdAt DateTime    @default(now())
+  updatedAt DateTime    @updatedAt
+  Post      Post[]
+  Like      Like[]
+  Challenge Challenge[]
+  Comment   Comment[]
+  Bookmark  Bookmark[]
+  following Follower[]  @relation("following")
+  Follower  Follower[]  @relation("followers")
+  Members   Members[]
+  Habit     Habit[]
+}
+
+model Follower {
+  id                 String   @id @default(auto()) @map("_id") @db.ObjectId
+  userId             String   @db.ObjectId // user to follow
+  followerId         String   @db.ObjectId // user that follows
+  startedFollowingAt DateTime @default(now())
+
+  user     User @relation("followers", fields: [userId], references: [id])
+  follower User @relation("following", fields: [followerId], references: [id])
+}
+
+model Challenge {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  challenge String
+  userId    String   @db.ObjectId
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  days      Int?
+
+  user    User      @relation(fields: [userId], references: [id])
+  Post    Post[]
+  Members Members[]
+  Habit   Habit[]
+}
+
+model Members {
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  challengeId String   @db.ObjectId
+  userId      String   @db.ObjectId
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  user      User      @relation(fields: [userId], references: [id])
+  challenge Challenge @relation(fields: [challengeId], references: [id])
+}
+
+model Post {
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  post        String?
+  files       String[]
+  tags        String[]
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  userId      String   @db.ObjectId
+  challengeId String?  @db.ObjectId
+  repostOfId  String?  @db.ObjectId
+  views       Int      @default(0)
+
+  user      User       @relation(fields: [userId], references: [id])
+  challenge Challenge? @relation(fields: [challengeId], references: [id])
+
+  Like    Like[]
+  Comment Comment[]
+
+  repostOf Post?      @relation("Reposts", fields: [repostOfId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  reposts  Post[]     @relation("Reposts")
+  Bookmark Bookmark[]
+}
+
+model Like {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  userId    String   @db.ObjectId
+  postId    String?  @db.ObjectId
+  commentId String?  @db.ObjectId
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id])
+
+  post    Post?    @relation(fields: [postId], references: [id])
+  comment Comment? @relation(fields: [commentId], references: [id])
+}
+
+model Comment {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  comment   String?
+  files     String[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  userId    String   @db.ObjectId
+  postId    String   @db.ObjectId
+
+  Like Like[]
+  user User   @relation(fields: [userId], references: [id])
+  post Post   @relation(fields: [postId], references: [id])
+}
+
+model Bookmark {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  postId    String   @db.ObjectId
+  userId    String   @db.ObjectId
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id])
+  post Post @relation(fields: [postId], references: [id])
+}
+
+model Habit {
+  id             String    @id @default(auto()) @map("_id") @db.ObjectId
+  task           String
+  description    String?
+  dueTime        DateTime?
+  isCompleted    Boolean   @default(false)
+  challengeId    String?   @db.ObjectId
+  userId         String    @db.ObjectId
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+  FirstReminder  Boolean   @default(false)
+  SecondReminder Boolean   @default(false)
+  ThirdReminder  Boolean   @default(false)
+  FourthReminder Boolean   @default(false)
+
+  challenge Challenge? @relation(fields: [challengeId], references: [id])
+  user      User       @relation(fields: [userId], references: [id])
+}

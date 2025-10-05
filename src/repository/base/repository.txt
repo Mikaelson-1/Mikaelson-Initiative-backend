@@ -1,0 +1,295 @@
+import { User } from "../../generated/prisma";
+import { logger, prisma } from "../../utils";
+import { IRepository } from "./repository.interface";
+import { PrismaClient } from "@prisma/client";
+import { Prisma } from "../../generated/prisma";
+
+export class Repository<T> implements IRepository<T> {
+  private readonly db: PrismaClient;
+
+  constructor(db: PrismaClient) {
+    this.db = db;
+  }
+
+  async create(data: any): Promise<T> {
+    return this.db.create({ data });
+  }
+
+  async findById(id: string | number, type: string): Promise<T | null> {
+    switch (type) {
+      case "user":
+        return this.db.user.findUnique({
+          where: {
+            clerkId: id,
+          },
+        });
+      case "post":
+        return this.db.findUnique({
+          where: {
+            id: id,
+          },
+          include: {
+            user: true,
+            Like: true,
+            Comment: true,
+          },
+        });
+      case "challenge":
+        return this.db.findUnique({
+          where: {
+            id: id,
+          },
+          include: {
+            user: true,
+            Post: true,
+          },
+        });
+      case "comment":
+        logger.info(`Comment Id in repo: ${id}`);
+        const comment = this.db.findUnique({
+          where: {
+            id: id,
+          },
+          include: {
+            user: true,
+            post: true,
+            Like: true,
+          },
+        });
+        logger.info("Comment:", comment);
+        return comment;
+      case "bookmark":
+        return this.db.findUnique({
+          where: {
+            id: id,
+          },
+          include: {
+            post: true,
+          },
+        });
+      default:
+        throw new Error(`Unsupported type: ${type}`);
+    }
+  }
+
+  async findAll(
+    type: string,
+    id?: string | number,
+    params?: {
+      filter?: any;
+      skip?: any;
+      take?: number;
+      orderBy?: any;
+    }
+  ): Promise<T[]> {
+    switch (type) {
+      case "user":
+        return this.db.findMany({
+          orderBy: {
+            createdAt: "desc",
+          },
+        });
+      case "post":
+        return this.db.findMany({
+          orderBy: {
+            createdAt: "desc",
+          },
+          include: {
+            user: true,
+            Like: true,
+            Comment: true,
+            challenge: true,
+            repostOf: {
+              include: {
+                user: true,
+              },
+            },
+          },
+        });
+      case "like":
+        return this.db.findMany({
+          where: {
+            OR: [{ postId: id }, { commentId: id }],
+          },
+          orderBy: {
+            createdAt: "desc",
+          },
+          include: {
+            user: true,
+            post: true,
+            comment: true,
+          },
+        });
+      case "userPosts":
+        logger.info(`Clerk Id in repo: ${id}`);
+        const posts = this.db.findMany({
+          where: {
+            userId: id,
+          },
+          orderBy: {
+            createdAt: "desc",
+          },
+          include: {
+            user: true,
+            Like: true,
+            challenge: true,
+            Comment: true,
+            repostOf: {
+              include: {
+                user: true,
+              },
+            },
+          },
+        });
+        return posts;
+      case "challenge":
+        return this.db.findMany({
+          orderBy: {
+            createdAt: "desc",
+          },
+          include: {
+            user: true,
+            Post: true,
+          },
+        });
+      case "comment":
+        return this.db.findMany({
+          where: {
+            postId: id,
+          },
+          orderBy: {
+            createdAt: "desc",
+          },
+          include: {
+            user: true,
+            post: true,
+            Like: true,
+          },
+        });
+      case "searchPosts":
+        const post = id;
+        return this.db.findMany({
+          where: {
+            post: {
+              contains: post,
+            },
+          },
+          orderBy: {
+            createdAt: "desc",
+          },
+          include: {
+            user: true,
+            post: true,
+          },
+        });
+      case "searchUsers":
+        const user = id;
+        return this.db.findMany({
+          where: {
+            OR: [
+              {
+                username: {
+                  contains: user,
+                },
+              },
+              {
+                email: {
+                  contains: user,
+                },
+              },
+            ],
+          },
+          orderBy: {
+            createdAt: "desc",
+          },
+          include: {
+            user: true,
+            post: true,
+            Like: true,
+          },
+        });
+      case "bookmark":
+        return this.db.findMany({
+          where: {
+            userId: id,
+          },
+          orderBy: {
+            createdAt: "desc",
+          },
+          include: {
+            post: true,
+          },
+        });
+      default:
+        throw new Error(`Unsupported type: ${type}`);
+    }
+  }
+
+  async findFirst(
+    targetId: string | number,
+    id: string | number,
+    type?: string,
+    likeWhat?: "post" | "comment"
+  ): Promise<T | null> {
+    switch (type) {
+      case "like":
+        return this.db.findFirst({
+          where: {
+            ...(likeWhat === "post"
+              ? { postId: targetId }
+              : { commentId: targetId }),
+
+            user: {
+              clerkId: id,
+            },
+          },
+        });
+      case "bookmark":
+        return this.db.findFirst({
+          where: {
+            postId: targetId,
+            user: {
+              clerkId: id,
+            },
+          },
+        });
+      default:
+        throw new Error(`Unsupported type: ${type}`);
+    }
+  }
+
+  async update(
+    id: string | number,
+    data: Partial<T>,
+    type?: string
+  ): Promise<T | null> {
+    logger.info(`Id: ${id}`);
+    switch (type) {
+      case "user":
+        return this.db.update({
+          where: {
+            clerkId: id,
+          },
+          data,
+        });
+      default:
+        return this.db.update({
+          where: {
+            id: id,
+          },
+          data,
+        });
+    }
+  }
+
+  async delete(id: string | number): Promise<boolean> {
+    const result = await this.db
+      .delete({
+        where: {
+          id,
+        },
+      })
+      .catch(() => null);
+    return result !== null;
+  }
+}
