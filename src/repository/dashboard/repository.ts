@@ -52,7 +52,20 @@ export class DashboardRepository<T> implements IRepository<T> {
       // Get tasks created by a user
       case "userTasks":
         return this.prismaClient.habit.findMany({
+          take: params?.take ?? undefined,
+          skip:
+            params?.skip && params?.take
+              ? (params?.skip - 1) * params?.take
+              : undefined,
           where: {
+            ...(params?.filter
+              ? {
+                  task: {
+                    contains: params.filter,
+                    mode: "insensitive",
+                  },
+                }
+              : undefined),
             user: {
               clerkId: id as string,
             },
@@ -61,6 +74,9 @@ export class DashboardRepository<T> implements IRepository<T> {
               lt: tomorrow,
             },
           } satisfies Prisma.HabitWhereInput,
+          orderBy: {
+            createdAt: params?.orderBy ?? "desc",
+          } satisfies Prisma.HabitOrderByWithRelationInput,
           include: {
             challenge: true,
             user: true,

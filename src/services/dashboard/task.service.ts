@@ -4,7 +4,6 @@ import { logger } from "../../utils";
 import RedisService from "../redis.service";
 import crypto from "crypto";
 import prisma from "../../config/prismadb";
-import { sendReminderEmail, sendTaskOverDueEmail } from "../../libs/email";
 
 const dashboardRepository = new DashboardRepository<Habit & { user: User }>(
   prisma?.habit
@@ -36,25 +35,6 @@ export default class TaskService {
         if (task) {
           await redisService.set(cachedKey, task, 600);
         }
-        const now = new Date();
-        const dueTime = task?.dueTime;
-
-        if (dueTime && !task.isCompleted) {
-          const twoHoursBeforeDue = new Date(
-            dueTime.getTime() - 2 * 60 * 60 * 1000
-          );
-
-          if (now >= dueTime) {
-            // Task is overdue
-            await sendTaskOverDueEmail(task.task, dueTime, task.user.email);
-          } else if (now >= twoHoursBeforeDue && now < dueTime) {
-            // 2 hours before due
-            await sendReminderEmail(task.task, "2 hours", task.user.email, task.id);
-          } else {
-            console.log("Task is still pending");
-          }
-        }
-
         return task as T;
       }
     } catch (error) {

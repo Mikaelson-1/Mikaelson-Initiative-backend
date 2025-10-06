@@ -8,12 +8,14 @@ import { getDay } from "../utils/date";
  is not yet marked as completed within 24 hours */
 
 const { today, tomorrow, yesterday } = getDay();
+// Run every minute
 cron.schedule("* * * * *", async () => {
   try {
-    //logger.info("Checking Incompleted Tasks reminder...");
+    //logger.info("Checking Incompleted Tasks reminder....");
     const now = new Date();
 
-    const TwoHoursAgo = new Date(now.getTime() - 3 * 60 * 60 * 1000);
+    const TwoHoursAgo = new Date(now.getTime() - 2 * 60 * 1000);
+
     const SixHoursAgo = new Date(now.getTime() - 6 * 60 * 60 * 1000);
     const TwelveHoursAgo = new Date(now.getTime() - 12 * 60 * 60 * 1000);
     const TwentyThreeHoursAgo = new Date(now.getTime() - 23 * 60 * 60 * 1000);
@@ -155,35 +157,38 @@ cron.schedule("* * * * *", async () => {
       }
     };
 
-    const TaskDue = async () => {
+    const sendEndOfDayOverdue = async () => {
+      const now = new Date();
+      const currentHour = now.getHours();
+
+      // Only run between 11 PM and midnight
+      if (currentHour !== 23) return;
+
       const tasks = await prisma.habit.findMany({
         where: {
-          isCompleted: false, // Must have received fourth reminder
+          isCompleted: false,
           FourthReminder: true,
           DueTimeReminder: false,
+          dueTime: null,
           createdAt: {
-            gte: yesterday,
-            lt: today,
+            gte: today,
+            lt: tomorrow,
           },
         },
-        include: {
-          user: true,
-        },
+        include: { user: true },
       });
 
-      const tasksWithoutDueTime = tasks.filter((task) => !task.dueTime);
-
-      for (const task of tasksWithoutDueTime) {
+      for (const task of tasks) {
         try {
           await sendTaskOverDueEmail(task.task, today, task.user.email);
           await prisma.habit.update({
             where: { id: task.id },
             data: { DueTimeReminder: true },
           });
-          logger.info(`23-hour reminder sent for task ${task.id}`);
+          logger.info(`End-of-day overdue sent for task ${task.id}`);
         } catch (error) {
           logger.error(
-            `Failed to send 23-hour reminder for task ${task.id}` + error
+            `Failed to send end-of-day overdue for task ${task.id}: ${error}`
           );
         }
       }
@@ -209,9 +214,6 @@ cron.schedule("* * * * *", async () => {
 
         for (const task of tasksWithDueTime) {
           const dueTime = task.dueTime!;
-          const twoHoursBeforeDue = new Date(
-            dueTime.getTime() - 2 * 60 * 60 * 1000
-          );
 
           try {
             if (now >= dueTime) {
@@ -222,7 +224,47 @@ cron.schedule("* * * * *", async () => {
                 data: { DueTimeReminder: true },
               });
               logger.info(`Task is overdue: ${task.id} at ${dueTime}`);
-            } else if (now >= twoHoursBeforeDue && now < dueTime) {
+            }
+          } catch (error) {
+            logger.error(
+              `Failed to send reminder for task ${task.id}: ${error}`
+            );
+          }
+        }
+      } catch (error) {
+        logger.error(`Error fetching tasks with dueTime: ${error}`);
+      }
+    };
+
+    const TasksWithDueTimeTwoHoursToDue = async () => {
+      try {
+        const tasks = await prisma.habit.findMany({
+          where: {
+            isCompleted: false,
+            DueTimeReminder: false,
+            FirstReminder: false,
+            SecondReminder: false,
+            createdAt: {
+              gte: today,
+              lte: tomorrow, // make sure tomorrow = start of next day
+            },
+          },
+          include: { user: true },
+        });
+
+        const tasksWithDueTime = tasks.filter((task) => task.dueTime);
+
+        const now = new Date();
+
+        for (const task of tasksWithDueTime) {
+          const dueTime = task.dueTime!;
+          // If duetime is 2:00PM, send a mail by 12:00PM
+          const twoHoursBeforeDue = new Date(
+            dueTime.getTime() - 2 * 60 * 60 * 1000
+          );
+
+          try {
+            if (now >= twoHoursBeforeDue && now < dueTime) {
               // 2 hours before due
               await sendReminderEmail(
                 task.task,
@@ -230,8 +272,66 @@ cron.schedule("* * * * *", async () => {
                 task.user.email,
                 task.id
               );
+              await prisma.habit.update({
+                where: { id: task.id },
+                data: { FirstReminder: true },
+              });
 
-              logger.info(`2-hour reminder sent: ${task.id}`);
+              logger.info(`2-hours before due reminder sent: ${task.id}`);
+            }
+          } catch (error) {
+            logger.error(
+              `Failed to send reminder for task ${task.id}: ${error}`
+            );
+          }
+        }
+      } catch (error) {
+        logger.error(`Error fetching tasks with dueTime: ${error}`);
+      }
+    };
+
+    const TasksWithDueTimeThirtyMinutesToDue = async () => {
+      try {
+        const tasks = await prisma.habit.findMany({
+          where: {
+            isCompleted: false,
+            DueTimeReminder: false,
+            FirstReminder: true,
+            SecondReminder: false,
+            createdAt: {
+              gte: today,
+              lte: tomorrow, // make sure tomorrow = start of next day
+            },
+          },
+          include: { user: true },
+        });
+
+        const tasksWithDueTime = tasks.filter((task) => task.dueTime);
+
+        const now = new Date();
+
+        for (const task of tasksWithDueTime) {
+          const dueTime = task.dueTime!;
+          // If duetime is 2:00PM, send a mail by 1:30PM
+          const thirtyMinsBeforeDue = new Date(
+            dueTime.getTime() - 30 * 60 * 1000
+          );
+
+          try {
+            if (now >= thirtyMinsBeforeDue && now < dueTime) {
+              // 30 minutes before due
+              await sendReminderEmail(
+                task.task,
+                "30 minutes",
+                task.user.email,
+                task.id
+              );
+              await prisma.habit.update({
+                where: { id: task.id },
+                data: { SecondReminder: true },
+              });
+
+              logger.info(`30 minutes before due reminder sent: ${task.id}`);
             }
           } catch (error) {
             logger.error(
@@ -249,8 +349,10 @@ cron.schedule("* * * * *", async () => {
       SixHoursReminder(),
       TwelveHoursReminder(),
       TwentyThreeHoursReminder(),
-      TaskDue(),
+      sendEndOfDayOverdue(),
       TasksWithDueTime(),
+      TasksWithDueTimeTwoHoursToDue(),
+      TasksWithDueTimeThirtyMinutesToDue(),
     ]);
 
     //logger.info("Reminder check completed");

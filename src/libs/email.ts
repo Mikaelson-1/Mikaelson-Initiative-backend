@@ -43,13 +43,14 @@ export const sendReminderEmail = async (
 ) => {
   const transporter = await createTransporter();
   const hoursLeft = getHoursLeftToday();
+  const [Time] = time.split(" ");
   const info = await transporter.sendMail({
     from: "noreply@mikaelson-initiative-org.com",
     to: email,
     subject: "Task Reminder",
     text: !taskId
-      ? `You have about ${hoursLeft} hour(s) left to complete "${task}" for today. Keep going!`
-      : `You have about ${time} before this task is due`,
+      ? `You have less than ${hoursLeft} hour(s) left to complete "${task}" for today. Keep going!`
+      : `You have less than ${time} before this task is due`,
     html: `
     <div style="font-family: Arial, sans-serif; line-height: 1.6; color: #333;">
       <h2>⏰ Task Reminder</h2>
@@ -60,10 +61,10 @@ export const sendReminderEmail = async (
       </blockquote>
 ${
   !taskId
-    ? `<p>You have approximately <strong>${hoursLeft} hour${
+    ? `<p>You have less than <strong>${hoursLeft} hour${
         hoursLeft === 1 ? "" : "s"
       }</strong> left before the day ends.</p>`
-    : `<p>You have about ${time} before this task is due.</p>`
+    : `<p>You have less than ${time} before this task is due.</p>`
 }
       <p>Stay focused and get it done — your future self will thank you!</p>
       <br/>
