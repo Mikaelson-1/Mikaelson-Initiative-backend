@@ -13,7 +13,8 @@ import challengeRouter from "./routes/v1/challenge.route";
 import commentRouter from "./routes/v1/comment.route";
 import bookmarkRouter from "./routes/v1/bookmark.route";
 import taskRouter from "./routes/v1/task.route";
-import "../src/jobs/Task-Reminder.job";
+import "./jobs/sendTaskReminders.job";
+import { getHoursLeftToday } from "./utils/date";
 
 const app = express();
 const server = http.createServer(app);
@@ -46,6 +47,7 @@ app.use("/api/v1/bookmarks", bookmarkRouter);
 app.use("/api/v1/tasks", taskRouter);
 
 const startServer = async () => {
+  getHoursLeftToday();
   server.listen(PORT, () => logger.info(`Server is running at PORT ${PORT}`));
 };
 

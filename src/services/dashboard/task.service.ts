@@ -1,11 +1,14 @@
-import { Habit } from "../../generated/prisma";
+import { Habit, User } from "../../generated/prisma";
 import { DashboardRepository } from "../../repository/dashboard/repository";
 import { logger } from "../../utils";
 import RedisService from "../redis.service";
 import crypto from "crypto";
 import prisma from "../../config/prismadb";
+import { sendReminderEmail, sendTaskOverDueEmail } from "../../libs/email";
 
-const dashboardRepository = new DashboardRepository<Habit>(prisma?.habit);
+const dashboardRepository = new DashboardRepository<Habit & { user: User }>(
+  prisma?.habit
+);
 const redisService = new RedisService();
 
 export default class TaskService {
@@ -19,19 +22,40 @@ export default class TaskService {
     }
   }
 
-  async getTask<T>(id: string | number): Promise<T | Habit | null> {
+  async getTask<T>(
+    id: string | number
+  ): Promise<T | (Habit & { user: User }) | null> {
     try {
       if (!id) return null;
       const cachedKey = `Task:${id}`;
       const cachedTask = await redisService.get(cachedKey);
       if (cachedTask) {
-        return cachedTask as Habit | T;
+        return cachedTask as T;
       } else {
         const task = await dashboardRepository.findById(id, "task");
         if (task) {
           await redisService.set(cachedKey, task, 600);
         }
-        return task as Habit;
+        const now = new Date();
+        const dueTime = task?.dueTime;
+
+        if (dueTime && !task.isCompleted) {
+          const twoHoursBeforeDue = new Date(
+            dueTime.getTime() - 2 * 60 * 60 * 1000
+          );
+
+          if (now >= dueTime) {
+            // Task is overdue
+            await sendTaskOverDueEmail(task.task, dueTime, task.user.email);
+          } else if (now >= twoHoursBeforeDue && now < dueTime) {
+            // 2 hours before due
+            await sendReminderEmail(task.task, "2 hours", task.user.email, task.id);
+          } else {
+            console.log("Task is still pending");
+          }
+        }
+
+        return task as T;
       }
     } catch (error) {
       logger.info("Something went wrong with getting task" + error);

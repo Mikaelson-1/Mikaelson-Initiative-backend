@@ -14,7 +14,10 @@ export const createTaskValidation = z.object({
     message: "userId is required!",
   }),
   challengeId: z.string().optional(),
-  dueTime: z.date().optional(),
+  dueTime: z
+    .string()
+    .optional()
+    .transform((val) => (val ? new Date(val) : undefined)),
 });
 
 export type createTaskType = z.infer<typeof createTaskValidation>;

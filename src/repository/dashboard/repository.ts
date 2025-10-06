@@ -78,6 +78,25 @@ export class DashboardRepository<T> implements IRepository<T> {
         } satisfies Parameters<typeof prisma.habit.findMany>[0]) as Promise<
           T[]
         >;
+      // Get all missed tasks (Tasks not completed within Today)
+      case "userTasksPastToday":
+        return this.prismaClient.habit.findMany({
+          where: {
+            isCompleted: false,
+            user: {
+              clerkId: id as string,
+            },
+            createdAt: {
+              gte: tomorrow,
+            },
+          } satisfies Prisma.HabitWhereInput,
+          include: {
+            challenge: true,
+            user: true,
+          } satisfies Prisma.HabitInclude,
+        } satisfies Parameters<typeof prisma.habit.findMany>[0]) as Promise<
+          T[]
+        >;
       default:
         throw new Error(`Unsupported type: ${type}`);
     }

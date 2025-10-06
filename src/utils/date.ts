@@ -22,7 +22,9 @@ export const getDay = () => {
   today.setHours(0, 0, 0, 0);
   const tomorrow = new Date(today);
   tomorrow.setDate(today.getDate() + 1);
-  return { today, tomorrow };
+  const yesterday = new Date(today);
+  yesterday.setDate(today.getDate() - 1);
+  return { today, tomorrow, yesterday };
 };
 
 export const countUniquePostDays = (posts: Post[]): number => {
@@ -32,4 +34,17 @@ export const countUniquePostDays = (posts: Post[]): number => {
     daysSet.add(day);
   }
   return daysSet.size;
+};
+
+export const getHoursLeftToday = () => {
+  const now = new Date();
+  // Get the end of today (23:59:59)
+  const endOfToday = new Date();
+  endOfToday.setHours(23, 59, 59, 999);
+  // Calculate hours left
+  const msLeft = endOfToday.getTime() - now.getTime(); // milliseconds left
+  const hoursLeft = Math.ceil(msLeft / (1000 * 60 * 60)); // convert to hours
+  logger.info(`${hoursLeft} hours to tomorrow`);
+
+  return hoursLeft;
 };

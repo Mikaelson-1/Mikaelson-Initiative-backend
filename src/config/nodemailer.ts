@@ -6,12 +6,12 @@ export const createTransporter = async () => {
 
   // Create a transporter using the test account
   const transporter = nodemailer.createTransport({
-    host: "smtp.ethereal.email",
+    host: "smtp.gmail.com",
     port: 587,
     secure: false, // true for port 465, false for others
     auth: {
-      user: testAccount.user,
-      pass: testAccount.pass,
+      user: process.env.SMTP_EMAIL,
+      pass: process.env.SMTP_PASSWORD,
     },
   });
 

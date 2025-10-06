@@ -4,6 +4,7 @@ import { logger } from "../../utils";
 import RedisService from "./../redis.service";
 import prisma from "../../config/prismadb";
 import crypto from "crypto";
+import { sendNewUserEmail } from "../../libs/email";
 
 const userRepository = new Repository<User>(prisma.user);
 const followRepository = new Repository<Follower>(prisma.follower);
@@ -15,7 +16,11 @@ export default class UserService {
     try {
       if (!data.email && !data.username && !data.clerkId) return null;
       await redisService.del(`Users`);
-      return userRepository.create(data);
+      const user = userRepository.create(data);
+      if (user) {
+        await sendNewUserEmail((await user).email);
+      }
+      return user;
     } catch (error) {
       logger.info("Something went wrong with creating user" + error);
     }

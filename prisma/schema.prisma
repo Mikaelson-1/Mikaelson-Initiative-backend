@@ -135,19 +135,20 @@ model Bookmark {
 }
 
 model Habit {
-  id             String    @id @default(auto()) @map("_id") @db.ObjectId
-  task           String
-  description    String?
-  dueTime        DateTime?
-  isCompleted    Boolean   @default(false)
-  challengeId    String?   @db.ObjectId
-  userId         String    @db.ObjectId
-  createdAt      DateTime  @default(now())
-  updatedAt      DateTime  @updatedAt
-  FirstReminder  Boolean   @default(false)
-  SecondReminder Boolean   @default(false)
-  ThirdReminder  Boolean   @default(false)
-  FourthReminder Boolean   @default(false)
+  id              String    @id @default(auto()) @map("_id") @db.ObjectId
+  task            String
+  description     String?
+  dueTime         DateTime?
+  isCompleted     Boolean   @default(false)
+  challengeId     String?   @db.ObjectId
+  userId          String    @db.ObjectId
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+  FirstReminder   Boolean   @default(false)
+  SecondReminder  Boolean   @default(false)
+  ThirdReminder   Boolean   @default(false)
+  FourthReminder  Boolean   @default(false)
+  DueTimeReminder Boolean   @default(false)
 
   challenge Challenge? @relation(fields: [challengeId], references: [id])
   user      User       @relation(fields: [userId], references: [id])
