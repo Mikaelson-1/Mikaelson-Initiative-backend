@@ -14,11 +14,10 @@ cron.schedule("* * * * *", async () => {
     //logger.info("Checking Incompleted Tasks reminder....");
     const now = new Date();
 
-    const TwoHoursAgo = new Date(now.getTime() - 2 * 60 * 1000);
-
-    const SixHoursAgo = new Date(now.getTime() - 6 * 60 * 60 * 1000);
-    const TwelveHoursAgo = new Date(now.getTime() - 12 * 60 * 60 * 1000);
-    const TwentyThreeHoursAgo = new Date(now.getTime() - 23 * 60 * 60 * 1000);
+    const TwoHoursAgo = new Date(Math.max(now.getTime() - 2 * 60 * 1000, now.getTime()));
+    const SixHoursAgo = new Date(Math.max(now.getTime() - 6 * 60 * 1000, now.getTime()));
+    const TwelveHoursAgo = new Date(Math.max(now.getTime() - 12 * 60 * 1000, now.getTime()));
+    const TwentyThreeHoursAgo = new Date(Math.max(now.getTime() - 23 * 60 * 1000, now.getTime()));
 
     const TwoHoursReminder = async () => {
       const tasks = await prisma.habit.findMany({
