@@ -33,16 +33,6 @@ export const getPresignedUrls = async (files: Express.Multer.File[]) => {
         const permanentUrl = `https://${process.env.S3_BUCKET_NAME}.t3.storage.dev/${uniqueKey}`;
 
         const fileBuffer = file.buffer;
-
-        /*const stream = Readable.from(file.buffer);
-        let uploadedBytes = 0;
-
-        stream.on("data", (chunk) => {
-          uploadedBytes += chunk.length;
-          const percent = ((uploadedBytes / file.size) * 100).toFixed(2);
-          logger.info(`Uploading ${uniqueKey}: ${percent}%`);
-        });*/
-
         await axios.put(presignedUrl, fileBuffer, {
           headers: {
             "Content-Type": file.mimetype,
@@ -107,3 +97,12 @@ export const getPresignedUrl = async (file: Express.Multer.File) => {
     return [];
   }
 };
+
+/*const stream = Readable.from(file.buffer);
+        let uploadedBytes = 0;
+
+        stream.on("data", (chunk) => {
+          uploadedBytes += chunk.length;
+          const percent = ((uploadedBytes / file.size) * 100).toFixed(2);
+          logger.info(`Uploading ${uniqueKey}: ${percent}%`);
+        });*/
