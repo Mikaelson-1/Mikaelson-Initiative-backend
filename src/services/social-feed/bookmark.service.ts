@@ -27,7 +27,15 @@ export default class BookmarkService {
   }
 
   // Get all user bookmarks
-  async getBookmark<T>(userId: string): Promise<T | null> {
+  async getBookmark<T>(
+    userId: string,
+    params?: {
+      filter?: any;
+      skip?: any;
+      take?: number;
+      orderBy?: any;
+    }
+  ): Promise<T | null> {
     try {
       const cachedKey = "Bookmarks";
       const cachedBookmarks = await redisService.get(cachedKey);
@@ -36,7 +44,12 @@ export default class BookmarkService {
         return cachedBookmarks as T;
       } else {
         logger.info(userId);
-        const bookmark = await bookmarkRepository.findAll("bookmark", userId);
+        const bookmark = await bookmarkRepository.findAll(
+          "bookmark",
+          userId,
+          undefined,
+          params
+        );
         await redisService.set(cachedKey, bookmark, 600);
         return bookmark as T;
       }

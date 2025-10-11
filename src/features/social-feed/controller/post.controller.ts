@@ -228,6 +228,7 @@ class PostController {
     try {
       const validate = repostValidation.parse(req.body);
       const { postId, post, clerkId }: repostType = validate;
+
       const repost = await postService.repost({
         repostOf: {
           connect: {

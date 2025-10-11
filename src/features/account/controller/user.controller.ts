@@ -132,7 +132,7 @@ class UserController {
       const update_user = await userService.updateUser(updatePayload, clerkId);
       logger.info(update_user);
       res
-        .status(200)
+        .status(201)
         .json(new ApiSuccess(201, "User updated successfully!,", update_user));
     } catch (error) {
       logger.error(error);
@@ -154,7 +154,7 @@ class UserController {
 
       res
         .status(200)
-        .json(new ApiSuccess(201, "Account deleted!,", "User deleted!"));
+        .json(new ApiSuccess(200, "Account deleted!,", "User deleted!"));
     } catch (error) {
       logger.error(error);
       res

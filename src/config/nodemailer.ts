@@ -15,8 +15,8 @@ export const createTransporter = async () => {
     },
   });
 
-  console.log("Ethereal test account:", testAccount);
-  console.log("Preview URL will be available in console after sending email.");
+  // console.log("Ethereal test account:", testAccount);
+  // console.log("Preview URL will be available in console after sending email.");
 
   return transporter;
 };

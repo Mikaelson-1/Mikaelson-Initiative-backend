@@ -1,8 +1,29 @@
 export interface IRepository<T> {
   create(data: any): Promise<T>;
-  findById(id: string | number, type: string): Promise<T | null>;
+  findById(
+    id: string | number,
+    type: "user" | "post" | "challenge" | "comment" | "bookmark" | ""
+  ): Promise<T | null>;
   findAll(
-    type: string,
+    type:
+      | "user"
+      | "post"
+      | "TodayPost"
+      | "like"
+      | "userPosts"
+      | "userTodayPosts"
+      | "challenge"
+      | "comment"
+      | "searchPosts"
+      | "searchUsers"
+      | "bookmark"
+      | "topContributors"
+      | "followers"
+      | "following"
+      | "challengeMembers"
+      | "userLikes"
+      | "userChallengePosts"
+      | "",
     id?: string | number,
     id2?: string | number,
     params?: {
@@ -15,13 +36,13 @@ export interface IRepository<T> {
   findFirst(
     targetId: string | number,
     id: string | number,
-    type?: string,
+    type?: "like" | "bookmark" | "follow" | "challengeMember" | "",
     likeWhat?: "post" | "comment"
   ): Promise<T | null>;
   update(
     id: string | number,
     data?: Partial<T>,
-    type?: string
+    type?: "user" | "views"
   ): Promise<T | null>;
   delete(id: string | number): Promise<boolean>;
 }

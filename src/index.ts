@@ -15,6 +15,7 @@ import bookmarkRouter from "./routes/v1/bookmark.route";
 import taskRouter from "./routes/v1/task.route";
 import "./jobs/sendTaskReminders.job";
 import { getHoursLeftToday } from "./utils/date";
+import checkDbHealth from "./utils/dbhealth";
 
 const app = express();
 const server = http.createServer(app);
@@ -48,6 +49,7 @@ app.use("/api/v1/tasks", taskRouter);
 
 const startServer = async () => {
   getHoursLeftToday();
+  checkDbHealth();
   server.listen(PORT, () => logger.info(`Server is running at PORT ${PORT}`));
 };
 

@@ -64,7 +64,12 @@ class BookmarkController {
       const user = (await userService.getUser(clerkId)) as User;
       logger.info(user?.id);
 
-      const bookmarks = await bookmarkService.getBookmark(clerkId);
+      const bookmarks = await bookmarkService.getBookmark(clerkId, {
+        filter: filter,
+        skip: Number(skip) || undefined,
+        take: Number(take) || undefined,
+        orderBy: orderBy,
+      });
 
       return res
         .status(200)

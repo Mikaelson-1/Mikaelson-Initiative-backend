@@ -12,14 +12,24 @@ const { today, tomorrow, yesterday } = getDay();
 cron.schedule("* * * * *", async () => {
   try {
     //logger.info("Checking Incompleted Tasks reminder....");
+    /** Had to comment out the log so i wont have a log every minute 😅 */
     const now = new Date();
 
-    const TwoHoursAgo = new Date(Math.max(now.getTime() - 2 * 60 * 1000, now.getTime()));
-    const SixHoursAgo = new Date(Math.max(now.getTime() - 6 * 60 * 1000, now.getTime()));
-    const TwelveHoursAgo = new Date(Math.max(now.getTime() - 12 * 60 * 1000, now.getTime()));
-    const TwentyThreeHoursAgo = new Date(Math.max(now.getTime() - 23 * 60 * 1000, now.getTime()));
+    const TwoHoursAgo = new Date(
+      Math.max(now.getTime() - 2 * 60 * 1000, now.getTime())
+    );
+    const SixHoursAgo = new Date(
+      Math.max(now.getTime() - 6 * 60 * 1000, now.getTime())
+    );
+    const TwelveHoursAgo = new Date(
+      Math.max(now.getTime() - 12 * 60 * 1000, now.getTime())
+    );
+    const TwentyThreeHoursAgo = new Date(
+      Math.max(now.getTime() - 23 * 60 * 1000, now.getTime())
+    );
 
     const TwoHoursReminder = async () => {
+      // Task created >= today <= twohoursAgo
       const tasks = await prisma.habit.findMany({
         where: {
           isCompleted: false,
@@ -201,7 +211,7 @@ cron.schedule("* * * * *", async () => {
             DueTimeReminder: false,
             createdAt: {
               gte: today,
-              lte: tomorrow, // make sure tomorrow = start of next day
+              lte: tomorrow,
             },
           },
           include: { user: true },

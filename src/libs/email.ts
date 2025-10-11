@@ -1,6 +1,7 @@
 import { createTransporter } from "../config/nodemailer";
 import nodemailer from "nodemailer";
 import { getHoursLeftToday } from "../utils/date";
+import { logger } from "../utils";
 
 export const sendNewUserEmail = async (email: string) => {
   const transporter = await createTransporter();
@@ -31,8 +32,8 @@ Let’s make something extraordinary together.
     `,
   });
 
-  console.log("Message sent:", info.messageId);
-  console.log("Preview URL:", nodemailer.getTestMessageUrl(info));
+  logger.info("Message sent:" + info.messageId);
+  //logger.info("Preview URL:" + nodemailer.getTestMessageUrl(info));
 };
 
 export const sendReminderEmail = async (
@@ -75,8 +76,8 @@ ${
     </div>`,
   });
 
-  console.log("Message sent:", info.messageId);
-  console.log("Preview URL:", nodemailer.getTestMessageUrl(info));
+  logger.info("Message sent:" + info.messageId);
+  //logger.info("Preview URL:"+ nodemailer.getTestMessageUrl(info));
 };
 
 export const sendTaskOverDueEmail = async (
@@ -121,6 +122,6 @@ export const sendTaskOverDueEmail = async (
     </div>`,
   });
 
-  console.log("Message sent:", info.messageId);
-  console.log("Preview URL:", nodemailer.getTestMessageUrl(info));
+  logger.info("Message sent:" + info.messageId);
+  //logger.info("Preview URL:"+ nodemailer.getTestMessageUrl(info));
 };

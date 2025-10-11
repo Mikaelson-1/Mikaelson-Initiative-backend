@@ -15,7 +15,7 @@ export class Repository<T> implements IRepository<T> {
   private readonly prismaClient: PrismaClient;
 
   constructor(db: any, prismaClient: PrismaClient = prisma) {
-    this.db = db; // db = prisma.user, prisma.post
+    this.db = db; // db = prisma.user, prisma.post, ...
     this.prismaClient = prismaClient; // prismaClient = prisma
   }
 
@@ -23,7 +23,10 @@ export class Repository<T> implements IRepository<T> {
     return this.db.create({ data });
   }
 
-  async findById(id: string | number, type: string): Promise<T | null> {
+  async findById(
+    id: string | number,
+    type: "user" | "post" | "challenge" | "comment" | "bookmark" | ""
+  ): Promise<T | null> {
     switch (type) {
       // Find user by Id
       case "user":
@@ -95,7 +98,25 @@ export class Repository<T> implements IRepository<T> {
   }
 
   async findAll(
-    type: string,
+    type:
+      | "user"
+      | "post"
+      | "TodayPost"
+      | "like"
+      | "userPosts"
+      | "userTodayPosts"
+      | "challenge"
+      | "comment"
+      | "searchPosts"
+      | "searchUsers"
+      | "bookmark"
+      | "topContributors"
+      | "followers"
+      | "following"
+      | "challengeMembers"
+      | "userLikes"
+      | "userChallengePosts"
+      | "",
     id?: string | number,
     id2?: string | number,
     params?: {
@@ -591,7 +612,7 @@ export class Repository<T> implements IRepository<T> {
   async findFirst(
     targetId: string | number,
     id: string | number,
-    type?: string,
+    type?: "like" | "bookmark" | "follow" | "challengeMember" | "",
     likeWhat?: "post" | "comment"
   ): Promise<T | null> {
     switch (type) {
@@ -652,7 +673,7 @@ export class Repository<T> implements IRepository<T> {
   async update(
     id: string | number,
     data?: Partial<T>,
-    type?: string
+    type?: "user" | "views"
   ): Promise<T | null> {
     logger.info(`Id: ${id}`);
     switch (type) {

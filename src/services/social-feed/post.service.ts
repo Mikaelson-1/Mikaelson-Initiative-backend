@@ -136,7 +136,7 @@ export default class PostService {
 
         return tagsMap as T;
       }
-      const posts = await postRepository.findAll("post");
+      const posts = await postRepository.findAll("TodayPost");
 
       // collect tags and group posts
       const tagsMap: Record<string, Post[]> = {};

@@ -38,7 +38,7 @@ export class DashboardRepository<T> implements IRepository<T> {
   }
 
   async findAll(
-    type: string,
+    type: "userTasks" | "tasks" | "userTasksPastToday",
     id?: string | number,
     id2?: string | number,
     params?: {
@@ -129,7 +129,7 @@ export class DashboardRepository<T> implements IRepository<T> {
   async update(
     id: string | number,
     data?: Partial<T>,
-    type?: string
+    type?: "task"
   ): Promise<T | null> {
     switch (type) {
       case "task":
