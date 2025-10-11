@@ -14,7 +14,14 @@ export default class PostService {
     if (!data.post) {
       logger.error("Post is required!");
     }
-    await redisService.del("Posts");
+
+    await Promise.all([
+      redisService.delByPattern("Posts:*"),
+      redisService.delByPattern("FollowingPosts:*"),
+      redisService.delByPattern("Post:*"),
+      redisService.delByPattern("TodayPosts"),
+    ]);
+
     return postRepository.create(data as any);
   }
 
@@ -85,6 +92,42 @@ export default class PostService {
     }
   }
 
+  // Get all post a user has created
+  async getFollowingPosts<T>(
+    userId?: string | number,
+    params?: {
+      filter?: any;
+      skip?: any;
+      take?: number;
+      orderBy?: any;
+    }
+  ): Promise<T | null> {
+    try {
+      const paramString = JSON.stringify(params || {});
+      const key = crypto.createHash("md5").update(paramString).digest("hex");
+      const cachedKey = `FollowingPosts:${userId}:${key}`;
+      const cachedPosts = await redisService.get(cachedKey);
+      logger.info(userId);
+      if (cachedPosts) {
+        logger.info(`Cached Posts:${cachedPosts}`);
+        return cachedPosts as T;
+      }
+
+      const posts = await postRepository.findAll(
+        "getFollowingPosts",
+        userId,
+        undefined,
+        params
+      );
+      logger.info(posts);
+      await redisService.set(cachedKey, posts, 600);
+      return posts as T;
+    } catch (error) {
+      logger.error("Something went wrong with fetch posts!");
+      return [] as T;
+    }
+  }
+
   // Get a Post
   async getPostById<T>(id: string | number): Promise<T | null> {
     try {
@@ -107,6 +150,7 @@ export default class PostService {
   // Update Post
   async updatePost<T>(data: any, id: string | number): Promise<T | null> {
     if (!id) throw new Error("Id is required!");
+    await redisService.del(`Post:*`);
     return postRepository.update(id, data) as T;
   }
 

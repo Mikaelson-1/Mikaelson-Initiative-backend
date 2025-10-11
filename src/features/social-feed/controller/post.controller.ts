@@ -37,10 +37,6 @@ class PostController {
     if (files && files.length > 0) {
       presignedUrls = await getPresignedUrls(files);
     }
-    /*  for (const file of files) {
-      const urls = await getPresignedUrl(file);
-      presignedUrls.push(urls as string);
-    } */
 
     const data: any = {
       post,
@@ -127,9 +123,48 @@ class PostController {
         },
       });*/
       logger.info(posts);
+      if (posts) {
+        res
+          .status(200)
+          .json(new ApiSuccess(200, "Posts fetched successfully!,", posts));
+      } else {
+        res.status(500).json(new ApiError(500, "Something wwent wrong!,", []));
+      }
+    } catch (error) {
+      logger.error(error);
       res
-        .status(200)
-        .json(new ApiSuccess(200, "Posts fetched successfully!,", posts));
+        .status(500)
+        .json(new ApiError(500, "Something wwent wrong!,", [error]));
+    }
+  }
+
+  static async getFollowingPosts(req: express.Request, res: express.Response) {
+    try {
+      const params = req.query;
+      const { orderBy, take, skip, filter } = params;
+      const clerkId = req.params.id;
+
+      const posts = await postService.getFollowingPosts(clerkId, {
+        filter: filter,
+        skip: Number(skip) || undefined,
+        take: Number(take) || undefined,
+        orderBy: orderBy,
+      });
+
+      logger.info(posts);
+      if (posts) {
+        res
+          .status(200)
+          .json(
+            new ApiSuccess(
+              200,
+              "Accounts you are following Posts fetched successfully!,",
+              posts
+            )
+          );
+      } else {
+        res.status(500).json(new ApiError(500, "Something wwent wrong!,", []));
+      }
     } catch (error) {
       logger.error(error);
       res

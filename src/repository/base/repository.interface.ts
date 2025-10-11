@@ -23,7 +23,7 @@ export interface IRepository<T> {
       | "challengeMembers"
       | "userLikes"
       | "userChallengePosts"
-      | "",
+      | "getFollowingPosts",
     id?: string | number,
     id2?: string | number,
     params?: {

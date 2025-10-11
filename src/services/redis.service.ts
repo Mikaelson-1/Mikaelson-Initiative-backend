@@ -35,4 +35,37 @@ export default class RedisService {
   async exist(key: string): Promise<boolean> {
     return (await redis.exists(key)) === 1;
   }
+
+  async flushdb() {
+    await redis.flushdb();
+    logger.info("Redis DB has been clear!");
+  }
+
+  async delByPattern(pattern: string) {
+    const stream = redis.scanStream({
+      match: pattern,
+      count: 100,
+    });
+
+    return new Promise<void>((resolve, reject) => {
+      stream.on("data", async (keys: string[]) => {
+        if (keys.length > 0) {
+          await redis.del(...keys);
+          logger.info(
+            `Deleted ${keys.length} cache keys for pattern: ${pattern}`
+          );
+        }
+      });
+
+      stream.on("end", () => {
+        logger.info(`Finished deleting all keys for pattern: ${pattern}`);
+        resolve();
+      });
+
+      stream.on("error", (err) => {
+        logger.error(`Error while deleting pattern ${pattern}:` + err);
+        reject(err);
+      });
+    });
+  }
 }

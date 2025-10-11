@@ -116,7 +116,7 @@ export class Repository<T> implements IRepository<T> {
       | "challengeMembers"
       | "userLikes"
       | "userChallengePosts"
-      | "",
+      | "getFollowingPosts",
     id?: string | number,
     id2?: string | number,
     params?: {
@@ -523,6 +523,53 @@ export class Repository<T> implements IRepository<T> {
         } satisfies Parameters<typeof prisma.follower.findMany>[0]) as Promise<
           T[]
         >;
+
+      case "getFollowingPosts":
+        const followingUser = await this.prismaClient.follower.findMany({
+          where: {
+            follower: {
+              clerkId: id as string,
+            },
+          } satisfies Prisma.FollowerWhereInput,
+          select: {
+            userId: true,
+          } satisfies Prisma.FollowerSelect,
+        });
+        logger.info("Account you are following:" + followingUser);
+
+        const followingIds = followingUser.map((f: any) => f.userId);
+
+        if (followingIds.length === 0) {
+          logger.info("User follows no one — returning empty post list.");
+          return [];
+        }
+
+        // Get all post created by the accounts you are following
+        const followingPosts = await this.prismaClient.post.findMany({
+          where: {
+            user: {
+              id: { in: followingIds },
+            },
+          } satisfies Prisma.PostWhereInput,
+          include: {
+            user: true,
+            Like: true,
+            Comment: {
+              include: { user: true },
+            },
+          } satisfies Prisma.PostInclude,
+          orderBy: {
+            createdAt: params?.orderBy ?? "desc",
+          },
+          take: params?.take ?? undefined,
+          skip:
+            params?.skip && params?.take
+              ? (params.skip - 1) * params.take
+              : undefined,
+        } satisfies Parameters<typeof this.prismaClient.post.findMany>[0]);
+
+        logger.info(followingPosts);
+        return followingPosts as unknown as Promise<T[]>;
 
       // Get all members in a challenge group
       case "challengeMembers":

@@ -16,11 +16,7 @@ export default class LikeService {
     likeWhat: "post" | "comment"
   ) {
     const likes = await likeRepository.findAll("like", targetId);
-   /* const userLikes = likes.map(
-      (like: (Like & { user: User }) | any) => like.user.clerkId
-    );
-    logger.info(userLikes);
-    //const hasUserLiked = userLikes.includes(clerkId);*/
+
     const hasUserLiked = await likeRepository.findFirst(
       targetId,
       clerkId,
@@ -57,6 +53,7 @@ export default class LikeService {
   // Unlike
   async deleteLike(id: string | number) {
     if (!id) throw new Error("Id is required!");
+    await redisService.del(`Likes:${id}`);
     return likeRepository.delete(id);
   }
 }

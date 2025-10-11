@@ -19,6 +19,7 @@ postRouter.get("/:id", PostController.getPostById);
 postRouter.patch("/:id", PostController.updatePost);
 postRouter.delete("/:id", PostController.deletePost);
 postRouter.get("/user/:id", PostController.getUsersPosts);
+postRouter.get("/following/:id", PostController.getFollowingPosts);
 postRouter.get("/user/:id/today", PostController.userPostCreatedToday);
 postRouter.patch("/:id/views", PostController.trackViewsMetric);
 
