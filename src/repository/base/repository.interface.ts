@@ -2,7 +2,7 @@ export interface IRepository<T> {
   create(data: any): Promise<T>;
   findById(
     id: string | number,
-    type: "user" | "post" | "challenge" | "comment" | "bookmark" | ""
+    type: "user" | "post" | "challenge" | "comment" | "bookmark" | "like"
   ): Promise<T | null>;
   findAll(
     type:

@@ -5,6 +5,7 @@ import RedisService from "../redis.service";
 import { logger } from "../../utils";
 import crypto from "crypto";
 import { countUniquePostDays } from "../../utils/date";
+import NotificationService from "../notification.service";
 
 type UserChallengePostsResult = {
   posts: Post[];
@@ -21,6 +22,7 @@ const postRepository = new Repository<Post>(prisma.post);
 
 const memberRepository = new Repository<Members>(prisma.members);
 const redisService = new RedisService();
+const notificationService = new NotificationService();
 
 export default class ChallengeService {
   // Create a challenge group
@@ -115,6 +117,23 @@ export default class ChallengeService {
           ? (numOfDaysPosted / numOfChallengeDays) * 100
           : 0;
 
+      if (percentageOfPosts === 100) {
+        const sendUserNotification =
+          await notificationService.createNotification(
+            "challengeCompleted",
+            challenge,
+            posts,
+             "sendNotificationToUser"
+          );
+        const sendChallengeCreatorNotification =
+          await notificationService.createNotification(
+            "challengeCompleted",
+            challenge,
+            posts,
+            "sendNotificationToChallengeCreator"
+          );
+      }
+
       return { posts, percentageOfPosts };
     }
   }
@@ -142,7 +161,11 @@ export default class ChallengeService {
       logger.info("You are already a member in this challenge");
     } else {
       await redisService.del(`Challenge`);
-      return memberRepository.create(data);
+      const member = await memberRepository.create(data);
+      if (member.id) {
+        await notificationService.createNotification("member", member);
+        return member;
+      }
     }
   }
 

@@ -95,6 +95,22 @@ class LikeController {
     }
   }
 
+  static async getLike(req: express.Request, res: express.Response) {
+    try {
+      const id = req.params.id;
+      const likes = await likeService.getLikeById(id);
+      logger.info(likes);
+      res
+        .status(200)
+        .json(new ApiSuccess(200, "Like fetched successfully!,", likes));
+    } catch (error) {
+      logger.error(error);
+      res
+        .status(500)
+        .json(new ApiError(500, "Something wwent wrong!,", [error]));
+    }
+  }
+
   static async deleteLikes(req: express.Request, res: express.Response) {
     try {
       const likeId = req.params.id;

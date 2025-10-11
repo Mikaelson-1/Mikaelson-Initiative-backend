@@ -1,18 +1,24 @@
-import { Post, User } from "../../generated/prisma";
+import { Post, User, Comment } from "../../generated/prisma";
 import { Repository } from "../../repository/base/repository";
 import { logger } from "../../utils";
 import RedisService from "./../redis.service";
 import prisma from "../../config/prismadb";
 import crypto from "crypto";
+import NotificationService from "../notification.service";
 
 const commentRepository = new Repository<Comment>(prisma.comment);
 const redisService = new RedisService();
+const notificationService = new NotificationService();
 
 export default class CommentService {
   // Create Comment
   async createComment(data: any) {
     await redisService.del("Comments");
-    return commentRepository.create(data as any);
+    const comment = await commentRepository.create(data as any);
+    if (comment?.id) {
+      await notificationService.createNotification("comment", comment);
+      return comment;
+    }
   }
 
   // Get all comments

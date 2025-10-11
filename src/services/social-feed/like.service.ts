@@ -3,9 +3,11 @@ import { Repository } from "../../repository/base/repository";
 import { logger } from "../../utils";
 import prisma from "../../config/prismadb";
 import RedisService from "../redis.service";
+import NotificationService from "../notification.service";
 
 const likeRepository = new Repository<Like>(prisma.like);
 const redisService = new RedisService();
+const notificationService = new NotificationService();
 
 export default class LikeService {
   // Like a post/comment
@@ -15,8 +17,6 @@ export default class LikeService {
     clerkId: string,
     likeWhat: "post" | "comment"
   ) {
-    const likes = await likeRepository.findAll("like", targetId);
-
     const hasUserLiked = await likeRepository.findFirst(
       targetId,
       clerkId,
@@ -28,7 +28,12 @@ export default class LikeService {
     } else {
       logger.info("Liking post...");
       await redisService.del(`Likes:${targetId}`);
-      return likeRepository.create(data);
+      const like = await likeRepository.create(data);
+
+      if (like?.id) {
+        await notificationService.createNotification("like", like);
+        return like;
+      }
     }
   }
 
@@ -50,10 +55,27 @@ export default class LikeService {
     }
   }
 
+  async getLikeById<T>(id: string | number): Promise<T | null> {
+    try {
+      const cachedKey = `Like:${id}`;
+      const cachedLike = await redisService.get(cachedKey);
+      if (cachedLike) {
+        return cachedLike as T;
+      }
+
+      const like = await likeRepository.findById(id, "like");
+      await redisService.set(cachedKey, like, 600);
+      return like as T;
+    } catch (error) {
+      logger.error("Something went wrong with fetch likes!", error as any);
+      return {} as T;
+    }
+  }
+
   // Unlike
   async deleteLike(id: string | number) {
     if (!id) throw new Error("Id is required!");
-    await redisService.del(`Likes:${id}`);
+    await redisService.del(`Like:${id}`);
     return likeRepository.delete(id);
   }
 }

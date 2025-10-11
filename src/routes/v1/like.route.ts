@@ -8,7 +8,8 @@ likeRouter.get("/welcome", (req: express.Request, res: express.Response) => {
 });
 
 likeRouter.post("/", LikeController.createLike);
-likeRouter.get("/:id", LikeController.getLikes);
+likeRouter.get("/:id", LikeController.getLike);
 likeRouter.delete("/:id", LikeController.deleteLikes);
+likeRouter.get("/post/:id", LikeController.getLikes);
 
 export default likeRouter;

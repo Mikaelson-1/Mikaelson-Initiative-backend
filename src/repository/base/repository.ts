@@ -25,7 +25,7 @@ export class Repository<T> implements IRepository<T> {
 
   async findById(
     id: string | number,
-    type: "user" | "post" | "challenge" | "comment" | "bookmark" | ""
+    type: "user" | "post" | "challenge" | "comment" | "bookmark" | "like"
   ): Promise<T | null> {
     switch (type) {
       // Find user by Id
@@ -91,6 +91,28 @@ export class Repository<T> implements IRepository<T> {
             post: true,
           } satisfies Prisma.BookmarkInclude,
         } satisfies Parameters<typeof prisma.bookmark.findUnique>[0]) as Promise<T | null>;
+
+      // Get a like by Id
+      case "like":
+        return this.prismaClient.like.findUnique({
+          where: {
+            id: id as string,
+          } satisfies Prisma.LikeWhereInput,
+
+          include: {
+            user: true,
+            post: {
+              include: {
+                user: true,
+              },
+            },
+            comment: {
+              include: {
+                user: true,
+              },
+            },
+          } satisfies Prisma.LikeInclude,
+        } satisfies Parameters<typeof prisma.like.findUnique>[0]) as Promise<T | null>;
 
       default:
         throw new Error(`Unsupported type: ${type}`);
@@ -255,8 +277,16 @@ export class Repository<T> implements IRepository<T> {
           } satisfies Prisma.LikeOrderByWithRelationInput,
           include: {
             user: true,
-            post: true,
-            comment: true,
+            post: {
+              include: {
+                user: true,
+              },
+            },
+            comment: {
+              include: {
+                user: true,
+              },
+            },
           } satisfies Prisma.LikeInclude,
         } satisfies Parameters<typeof prisma.like.findMany>[0]) as Promise<T[]>;
 

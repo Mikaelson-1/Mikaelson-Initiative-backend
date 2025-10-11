@@ -35,6 +35,10 @@ model User {
   Follower  Follower[]  @relation("followers")
   Members   Members[]
   Habit     Habit[]
+
+  Actor        Notification[] @relation("actor")
+  Receiver     Notification[] @relation("receiver")
+  Notification Notification[]
 }
 
 model Follower {
@@ -43,8 +47,9 @@ model Follower {
   followerId         String   @db.ObjectId // user that follows
   startedFollowingAt DateTime @default(now())
 
-  user     User @relation("followers", fields: [userId], references: [id])
-  follower User @relation("following", fields: [followerId], references: [id])
+  user         User           @relation("followers", fields: [userId], references: [id])
+  follower     User           @relation("following", fields: [followerId], references: [id])
+  Notification Notification[]
 }
 
 model Challenge {
@@ -55,10 +60,11 @@ model Challenge {
   updatedAt DateTime @updatedAt
   days      Int?
 
-  user    User      @relation(fields: [userId], references: [id])
-  Post    Post[]
-  Members Members[]
-  Habit   Habit[]
+  user         User           @relation(fields: [userId], references: [id])
+  Post         Post[]
+  Members      Members[]
+  Habit        Habit[]
+  Notification Notification[]
 }
 
 model Members {
@@ -90,9 +96,10 @@ model Post {
   Like    Like[]
   Comment Comment[]
 
-  repostOf Post?      @relation("Reposts", fields: [repostOfId], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  reposts  Post[]     @relation("Reposts")
-  Bookmark Bookmark[]
+  repostOf     Post?          @relation("Reposts", fields: [repostOfId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  reposts      Post[]         @relation("Reposts")
+  Bookmark     Bookmark[]
+  Notification Notification[]
 }
 
 model Like {
@@ -105,8 +112,9 @@ model Like {
 
   user User @relation(fields: [userId], references: [id])
 
-  post    Post?    @relation(fields: [postId], references: [id])
-  comment Comment? @relation(fields: [commentId], references: [id])
+  post         Post?          @relation(fields: [postId], references: [id])
+  comment      Comment?       @relation(fields: [commentId], references: [id])
+  Notification Notification[]
 }
 
 model Comment {
@@ -118,9 +126,10 @@ model Comment {
   userId    String   @db.ObjectId
   postId    String   @db.ObjectId
 
-  Like Like[]
-  user User   @relation(fields: [userId], references: [id])
-  post Post   @relation(fields: [postId], references: [id])
+  Like         Like[]
+  user         User           @relation(fields: [userId], references: [id])
+  post         Post           @relation(fields: [postId], references: [id])
+  Notification Notification[]
 }
 
 model Bookmark {
@@ -130,8 +139,9 @@ model Bookmark {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  user User @relation(fields: [userId], references: [id])
-  post Post @relation(fields: [postId], references: [id])
+  user         User           @relation(fields: [userId], references: [id])
+  post         Post           @relation(fields: [postId], references: [id])
+  Notification Notification[]
 }
 
 model Habit {
@@ -150,6 +160,36 @@ model Habit {
   FourthReminder  Boolean   @default(false)
   DueTimeReminder Boolean   @default(false)
 
+  challenge    Challenge?     @relation(fields: [challengeId], references: [id])
+  user         User           @relation(fields: [userId], references: [id])
+  Notification Notification[]
+}
+
+model Notification {
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  actorId     String   @db.ObjectId
+  receiverId  String   @db.ObjectId
+  event_type  String
+  message     String
+  postId      String?  @db.ObjectId
+  likeId      String?  @db.ObjectId
+  taskId      String?  @db.ObjectId
+  commentId   String?  @db.ObjectId
+  bookmarkId  String?  @db.ObjectId
+  challengeId String?  @db.ObjectId
+  followerId  String?  @db.ObjectId
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  actor     User       @relation("actor", fields: [actorId], references: [id])
+  receiver  User       @relation("receiver", fields: [receiverId], references: [id])
+  post      Post?      @relation(fields: [postId], references: [id])
+  like      Like?      @relation(fields: [likeId], references: [id])
+  comment   Comment?   @relation(fields: [commentId], references: [id])
+  task      Habit?     @relation(fields: [taskId], references: [id])
+  bookmark  Bookmark?  @relation(fields: [bookmarkId], references: [id])
   challenge Challenge? @relation(fields: [challengeId], references: [id])
-  user      User       @relation(fields: [userId], references: [id])
+  follower  Follower?  @relation(fields: [followerId], references: [id])
+  User      User?      @relation(fields: [userId], references: [id])
+  userId    String?    @db.ObjectId
 }

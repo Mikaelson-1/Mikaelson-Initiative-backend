@@ -4,9 +4,12 @@ import { getItemsCreatedToday, logger } from "../../utils";
 import RedisService from "./../redis.service";
 import prisma from "../../config/prismadb";
 import crypto from "crypto";
+import NotificationService from "../notification.service";
+import nodeCron from "node-cron";
 
 const postRepository = new Repository<Post>(prisma.post);
 const redisService = new RedisService();
+const notificationService = new NotificationService();
 
 export default class PostService {
   // Create Post, you can create a post inside a challenge (optional)
@@ -213,7 +216,11 @@ export default class PostService {
   async repost(data: any) {
     if (!data) return;
     await redisService.del("Posts");
-    return postRepository.create(data);
+    const post = await postRepository.create(data);
+    if (post.id) {
+      await notificationService.createNotification("repost", post);
+      return post;
+    }
   }
 
   // Get all posts created today by a user
