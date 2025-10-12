@@ -9,11 +9,13 @@ This document provides a comprehensive overview of all server-side features impl
 - **Backend Framework**: Express.js with TypeScript
 - **Database**: MongoDB with Prisma ORM
 - **Caching**: Redis for session management and performance
+- **Queue System**: BullMQ with Redis for background job processing
 - **File Storage**: AWS S3 for media uploads
 - **Email Service**: Nodemailer with SMTP
 - **Authentication**: Clerk integration
 - **Validation**: Zod for runtime type checking
 - **Logging**: Pino for structured logging
+- **Background Jobs**: Node-cron for scheduled tasks
 
 ### Project Structure
 ```
@@ -29,12 +31,14 @@ Server/src/
 ├── libs/            # External service integrations
 ├── middleware/      # Express middleware
 ├── modules/         # Application modules
+├── queues/          # BullMQ job queues
 ├── repository/      # Data access layer
 ├── routes/          # API route definitions
 ├── services/        # Business logic layer
 ├── tests/           # Test files
 ├── utils/           # Utility functions
-└── validations/     # Input validation schemas
+├── validations/     # Input validation schemas
+└── workers/         # Background job workers
 ```
 
 ## 🚀 API Endpoints
@@ -110,6 +114,12 @@ Server/src/
 - `DELETE /:id` - Delete task
 - `GET /:id/user` - Get user's tasks
 
+### 8. Notifications (`/notifications`) - **NEW**
+- `GET /welcome` - API welcome message
+- `GET /:clerkId` - Get user's notifications
+- `PATCH /:id/read` - Mark notification as read
+- `DELETE /:id` - Delete notification
+
 ## 🎯 Key Features
 
 ### 1. User Authentication & Profile Management
@@ -131,17 +141,19 @@ Server/src/
 - **Completion Tracking**: Mark tasks as completed
 - **Progress Monitoring**: Track user's task completion history
 
-### 4. Automated Reminder System
+### 4. Enhanced Automated Reminder System - **UPDATED**
 **Background Cron Job** (runs every minute):
 - **2-hour reminder**: For tasks created 2+ hours ago
 - **6-hour reminder**: For tasks not completed after 6 hours
 - **12-hour reminder**: For tasks not completed after 12 hours
 - **23-hour reminder**: Final reminder before day ends
 - **End-of-day overdue**: Notifications for incomplete tasks
-- **Time-based reminders**: 
+- **Enhanced Time-based reminders**: 
   - 2 hours before due time
   - 30 minutes before due time
   - Overdue notifications for missed deadlines
+  - Smart reminder state tracking (FirstReminder, SecondReminder, etc.)
+  - DueTimeReminder system for time-sensitive tasks
 
 ### 5. Challenge System
 - **Community Challenges**: Create and join group challenges
@@ -155,7 +167,15 @@ Server/src/
 - **Overdue Notifications**: Alert users about missed deadlines
 - **SMTP Integration**: Gmail SMTP for reliable email delivery
 
-### 7. File Storage & AWS Integration
+### 7. Real-Time Notification System - **NEW**
+- **BullMQ Queue System**: Asynchronous notification processing
+- **Event-Driven Notifications**: Automatic notifications for likes, comments, follows, reposts, and challenge activities
+- **Notification Workers**: Background processing with concurrency control
+- **Rich Notification Data**: Includes actor, receiver, event type, and contextual messages
+- **Challenge Completion Notifications**: Notifies both users and challenge creators
+- **Scalable Architecture**: Queue-based system for high-volume notifications
+
+### 8. File Storage & AWS Integration
 - **AWS S3 Storage**: Secure file upload and storage
 - **Presigned URLs**: Secure file upload with temporary access
 - **Multiple File Support**: Upload various file types
@@ -173,7 +193,8 @@ Server/src/
 - Like: Like/unlike functionality
 - Comment: Post comments with file support
 - Bookmark: Saved posts
-- Habit: Tasks and habits with reminder tracking
+- Habit: Tasks and habits with enhanced reminder tracking
+- Notification: Real-time notification system (NEW)
 ```
 
 ### Security Features
@@ -188,6 +209,8 @@ Server/src/
 - **Response Compression**: Gzip compression for responses
 - **Database Indexing**: Optimized queries with Prisma
 - **Background Jobs**: Non-blocking reminder system
+- **Queue-Based Processing**: BullMQ for scalable notification handling
+- **Worker Concurrency**: Configurable worker concurrency (5 concurrent jobs)
 
 ## 📧 Email Templates
 
@@ -221,12 +244,32 @@ Server/src/
 7. `TasksWithDueTimeTwoHoursToDue()` - 2-hour pre-due reminders
 8. `TasksWithDueTimeThirtyMinutesToDue()` - 30-minute pre-due reminders
 
+### Notification Worker System - **NEW**
+**Queue**: `notifications` (BullMQ)
+**Concurrency**: 5 concurrent jobs
+**Connection**: Redis-based BullMQ
+
+**Notification Types**:
+1. **Like Notifications**: When users like posts or comments
+2. **Comment Notifications**: When users comment on posts
+3. **Follow Notifications**: When users follow each other
+4. **Repost Notifications**: When users repost content
+5. **Member Notifications**: When users join challenges
+6. **Challenge Completion**: When users complete challenges (notifies both user and creator)
+
+**Worker Features**:
+- Automatic notification creation with rich context
+- Actor and receiver relationship tracking
+- Event type classification
+- Personalized notification messages
+- Database relationship linking (posts, comments, challenges, etc.)
+
 ## 🛠️ Development Setup
 
 ### Prerequisites
 - Node.js (v16+)
 - MongoDB database
-- Redis server
+- Redis server (for caching and BullMQ)
 - AWS S3 bucket
 - SMTP email credentials
 
@@ -280,12 +323,14 @@ npm run start  # Development with nodemon
 ## 🚀 Future Enhancements
 
 ### Planned Features
-- Real-time notifications via WebSocket
+- WebSocket integration for real-time notifications
 - Advanced analytics dashboard
 - Push notification system
 - Mobile app API optimization
 - Advanced search functionality
 - Content moderation system
+- Notification preferences and settings
+- Bulk notification operations
 
 ### Performance Improvements
 - Database query optimization
@@ -300,5 +345,5 @@ npm run start  # Development with nodemon
 
 For technical questions or feature requests, please contact the development team or refer to the project documentation.
 
-**Last Updated**: October 2025
-**Version**: 1.0.0
+**Last Updated**: January 2025
+**Version**: 1.1.0
