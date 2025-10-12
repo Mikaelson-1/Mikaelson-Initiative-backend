@@ -3,11 +3,10 @@ import { Repository } from "../../repository/base/repository";
 import { logger } from "../../utils";
 import prisma from "../../config/prismadb";
 import RedisService from "../redis.service";
-import NotificationService from "../notification.service";
+import { notificationQueue } from "../../queues/notification.queue";
 
 const likeRepository = new Repository<Like>(prisma.like);
 const redisService = new RedisService();
-const notificationService = new NotificationService();
 
 export default class LikeService {
   // Like a post/comment
@@ -31,7 +30,10 @@ export default class LikeService {
       const like = await likeRepository.create(data);
 
       if (like?.id) {
-        await notificationService.createNotification("like", like);
+        await notificationQueue.add("sendNotification", {
+          type: "like",
+          data: like,
+        });
         return like;
       }
     }

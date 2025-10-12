@@ -4,11 +4,10 @@ import { logger } from "../../utils";
 import RedisService from "./../redis.service";
 import prisma from "../../config/prismadb";
 import crypto from "crypto";
-import NotificationService from "../notification.service";
+import { notificationQueue } from "../../queues/notification.queue";
 
 const commentRepository = new Repository<Comment>(prisma.comment);
 const redisService = new RedisService();
-const notificationService = new NotificationService();
 
 export default class CommentService {
   // Create Comment
@@ -16,7 +15,10 @@ export default class CommentService {
     await redisService.del("Comments");
     const comment = await commentRepository.create(data as any);
     if (comment?.id) {
-      await notificationService.createNotification("comment", comment);
+      await notificationQueue.add("sendNotification", {
+        type: "comment",
+        data: comment,
+      });
       return comment;
     }
   }

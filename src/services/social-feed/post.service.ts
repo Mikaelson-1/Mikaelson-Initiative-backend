@@ -4,12 +4,11 @@ import { getItemsCreatedToday, logger } from "../../utils";
 import RedisService from "./../redis.service";
 import prisma from "../../config/prismadb";
 import crypto from "crypto";
-import NotificationService from "../notification.service";
 import nodeCron from "node-cron";
+import { notificationQueue } from "../../queues/notification.queue";
 
 const postRepository = new Repository<Post>(prisma.post);
 const redisService = new RedisService();
-const notificationService = new NotificationService();
 
 export default class PostService {
   // Create Post, you can create a post inside a challenge (optional)
@@ -218,7 +217,10 @@ export default class PostService {
     await redisService.del("Posts");
     const post = await postRepository.create(data);
     if (post.id) {
-      await notificationService.createNotification("repost", post);
+      await notificationQueue.add("sendNotification", {
+        type: "repost",
+        data: post,
+      });
       return post;
     }
   }

@@ -6,6 +6,7 @@ import { logger } from "../../utils";
 import crypto from "crypto";
 import { countUniquePostDays } from "../../utils/date";
 import NotificationService from "../notification.service";
+import { notificationQueue } from "../../queues/notification.queue";
 
 type UserChallengePostsResult = {
   posts: Post[];
@@ -118,20 +119,24 @@ export default class ChallengeService {
           : 0;
 
       if (percentageOfPosts === 100) {
-        const sendUserNotification =
-          await notificationService.createNotification(
-            "challengeCompleted",
-            challenge,
-            posts,
-             "sendNotificationToUser"
-          );
-        const sendChallengeCreatorNotification =
-          await notificationService.createNotification(
-            "challengeCompleted",
-            challenge,
-            posts,
-            "sendNotificationToChallengeCreator"
-          );
+        const sendUserNotification = await notificationQueue.add(
+          "sendNotification",
+          {
+            type: "challengeCompleted",
+            data: challenge,
+            data2: posts,
+            type2: "sendNotificationToUser",
+          }
+        );
+        const sendChallengeCreatorNotification = await notificationQueue.add(
+          "sendNotification",
+          {
+            type: "challengeCompleted",
+            data: challenge,
+            data2: posts,
+            type2: "sendNotificationToChallengeCreator",
+          }
+        );
       }
 
       return { posts, percentageOfPosts };
@@ -163,7 +168,10 @@ export default class ChallengeService {
       await redisService.del(`Challenge`);
       const member = await memberRepository.create(data);
       if (member.id) {
-        await notificationService.createNotification("member", member);
+        await notificationQueue.add("sendNotification", {
+          type: "member",
+          data: member,
+        });
         return member;
       }
     }

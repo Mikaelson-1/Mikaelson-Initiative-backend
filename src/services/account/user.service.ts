@@ -5,12 +5,11 @@ import RedisService from "./../redis.service";
 import prisma from "../../config/prismadb";
 import crypto from "crypto";
 import { sendNewUserEmail } from "../../libs/email";
-import NotificationService from "../notification.service";
+import { notificationQueue } from "../../queues/notification.queue";
 
 const userRepository = new Repository<User>(prisma.user);
 const followRepository = new Repository<Follower>(prisma.follower);
 const redisService = new RedisService();
-const notificationService = new NotificationService();
 
 // Create user and connect the clerkId from the frontend
 export default class UserService {
@@ -130,7 +129,10 @@ export default class UserService {
       } else {
         const follow = await followRepository.create(data);
         if (follow.id) {
-          await notificationService.createNotification("follow", follow);
+          await notificationQueue.add("sendNotification", {
+            type: "follow",
+            data: follow,
+          });
         }
         return follow;
       }

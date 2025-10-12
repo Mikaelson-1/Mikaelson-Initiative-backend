@@ -16,6 +16,7 @@ import taskRouter from "./routes/v1/task.route";
 import "./jobs/sendTaskReminders.job";
 import { getHoursLeftToday } from "./utils/date";
 import checkDbHealth from "./utils/dbhealth";
+import "./workers/notification.workers";
 
 const app = express();
 const server = http.createServer(app);
