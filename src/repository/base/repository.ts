@@ -25,7 +25,14 @@ export class Repository<T> implements IRepository<T> {
 
   async findById(
     id: string | number,
-    type: "user" | "post" | "challenge" | "comment" | "bookmark" | "like"
+    type:
+      | "user"
+      | "post"
+      | "challenge"
+      | "comment"
+      | "bookmark"
+      | "like"
+      | "notification"
   ): Promise<T | null> {
     switch (type) {
       // Find user by Id
@@ -114,6 +121,22 @@ export class Repository<T> implements IRepository<T> {
           } satisfies Prisma.LikeInclude,
         } satisfies Parameters<typeof prisma.like.findUnique>[0]) as Promise<T | null>;
 
+      case "notification":
+        return this.prismaClient.notification.findUnique({
+          where: {
+            id: id as string,
+          } satisfies Prisma.NotificationWhereInput,
+          include: {
+            post: true,
+            challenge: true,
+            comment: true,
+            task: true,
+            like: true,
+            follower: true,
+            bookmark: true,
+          } satisfies Prisma.NotificationInclude,
+        } satisfies Parameters<typeof prisma.notification.findUnique>[0]) as Promise<T | null>;
+
       default:
         throw new Error(`Unsupported type: ${type}`);
     }
@@ -138,7 +161,8 @@ export class Repository<T> implements IRepository<T> {
       | "challengeMembers"
       | "userLikes"
       | "userChallengePosts"
-      | "getFollowingPosts",
+      | "getFollowingPosts"
+      | "notifications",
     id?: string | number,
     id2?: string | number,
     params?: {
@@ -680,6 +704,24 @@ export class Repository<T> implements IRepository<T> {
             challenge: true,
           } satisfies Prisma.PostInclude,
         } satisfies Parameters<typeof prisma.post.findMany>[0]) as Promise<T[]>;
+
+      case "notifications":
+        return this.prismaClient.notification.findMany({
+          where: {
+            receiverId: id as string,
+          } satisfies Prisma.NotificationWhereInput,
+          include: {
+            post: true,
+            challenge: true,
+            comment: true,
+            task: true,
+            like: true,
+            follower: true,
+            bookmark: true,
+          } satisfies Prisma.NotificationInclude,
+        } satisfies Parameters<typeof prisma.notification.findMany>[0]) as Promise<
+          T[]
+        >;
       default:
         throw new Error(`Unsupported type: ${type}`);
     }

@@ -171,6 +171,7 @@ model Notification {
   receiverId  String   @db.ObjectId
   event_type  String
   message     String
+  isRead      Boolean  @default(false)
   postId      String?  @db.ObjectId
   likeId      String?  @db.ObjectId
   taskId      String?  @db.ObjectId

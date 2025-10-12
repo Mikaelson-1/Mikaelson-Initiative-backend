@@ -6,6 +6,7 @@ import prisma from "../../config/prismadb";
 import crypto from "crypto";
 import { sendNewUserEmail } from "../../libs/email";
 import { notificationQueue } from "../../queues/notification.queue";
+import { emailQueue } from "../../queues/email.queue";
 
 const userRepository = new Repository<User>(prisma.user);
 const followRepository = new Repository<Follower>(prisma.follower);
@@ -19,7 +20,10 @@ export default class UserService {
       await redisService.del(`Users`);
       const user = userRepository.create(data);
       if (user) {
-        await sendNewUserEmail((await user).email);
+        const email = (await user).email;
+        await emailQueue.add("sendEmail", {
+          email: email,
+        });
       }
       return user;
     } catch (error) {

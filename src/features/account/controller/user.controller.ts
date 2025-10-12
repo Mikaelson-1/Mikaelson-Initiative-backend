@@ -11,7 +11,7 @@ import {
   Post,
   User,
 } from "../../../generated/prisma";
-import { Prisma } from "@prisma/client";
+import { Prisma } from "../../../generated/prisma";
 import ChallengeService from "../../../services/social-feed/challenge.service";
 import {
   createUserType,
@@ -44,7 +44,7 @@ class UserController {
         uniqueName,
         email,
         clerkId,
-      });
+      } satisfies Prisma.UserCreateInput);
       logger.info(user);
       res
         .status(201)
@@ -129,7 +129,10 @@ class UserController {
         updatePayload.profileImage = profileImageUrl;
       if (files?.coverImage?.[0]) updatePayload.coverImage = coverImageUrl;
 
-      const update_user = await userService.updateUser(updatePayload, clerkId);
+      const update_user = await userService.updateUser(
+        updatePayload satisfies Prisma.UserUpdateInput,
+        clerkId
+      );
       logger.info(update_user);
       res
         .status(201)
@@ -207,7 +210,7 @@ class UserController {
               clerkId: clerkId,
             },
           },
-        },
+        } satisfies Prisma.FollowerCreateInput,
         userId,
         clerkId
       );

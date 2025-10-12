@@ -11,6 +11,7 @@ import {
   Post,
 } from "../generated/prisma";
 import { bullRedis } from "../utils/bullmq-redis";
+import RedisService from "../services/redis.service";
 
 interface NotificationJobData {
   type: string;
@@ -19,10 +20,17 @@ interface NotificationJobData {
   type2?: string;
 }
 
+const redisService = new RedisService();
+
 export const notificationWorker = new Worker<NotificationJobData>(
   "notifications",
   async (job: Job<NotificationJobData>) => {
     const { type, data, data2, type2 } = job.data;
+
+    await Promise.all([
+      redisService.delByPattern("Notifications:*"),
+      redisService.delByPattern("Notification:*"),
+    ]);
 
     switch (type) {
       case "like": {

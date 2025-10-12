@@ -17,6 +17,7 @@ import "./jobs/sendTaskReminders.job";
 import { getHoursLeftToday } from "./utils/date";
 import checkDbHealth from "./utils/dbhealth";
 import "./workers/notification.workers";
+import "./workers/email.worker";
 
 const app = express();
 const server = http.createServer(app);
