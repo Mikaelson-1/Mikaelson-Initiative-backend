@@ -345,5 +345,5 @@ npm run start  # Development with nodemon
 
 For technical questions or feature requests, please contact the development team or refer to the project documentation.
 
-**Last Updated**: January 2025
+**Last Updated**: October 2025
 **Version**: 1.1.0

@@ -8,6 +8,7 @@ const notificationRepository = new Repository(prisma.notification);
 const redisService = new RedisService();
 
 export default class NotificationService<T> {
+  // Get
   async getNotifications(clerkId: string) {
     try {
       const cachedKey = `Notifications:user:${clerkId}`;

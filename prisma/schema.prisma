@@ -39,6 +39,9 @@ model User {
   Actor        Notification[] @relation("actor")
   Receiver     Notification[] @relation("receiver")
   Notification Notification[]
+  Subscribe    Subscribe[]
+  SubscribeTo  Subscribe[]    @relation("subscribeTo")
+  Subscriber   Subscribe[]    @relation("subscriber")
 }
 
 model Follower {
@@ -145,20 +148,21 @@ model Bookmark {
 }
 
 model Habit {
-  id              String    @id @default(auto()) @map("_id") @db.ObjectId
-  task            String
-  description     String?
-  dueTime         DateTime?
-  isCompleted     Boolean   @default(false)
-  challengeId     String?   @db.ObjectId
-  userId          String    @db.ObjectId
-  createdAt       DateTime  @default(now())
-  updatedAt       DateTime  @updatedAt
-  FirstReminder   Boolean   @default(false)
-  SecondReminder  Boolean   @default(false)
-  ThirdReminder   Boolean   @default(false)
-  FourthReminder  Boolean   @default(false)
-  DueTimeReminder Boolean   @default(false)
+  id                 String    @id @default(auto()) @map("_id") @db.ObjectId
+  task               String
+  description        String?
+  dueTime            DateTime?
+  isCompleted        Boolean   @default(false)
+  challengeId        String?   @db.ObjectId
+  userId             String    @db.ObjectId
+  createdAt          DateTime  @default(now())
+  updatedAt          DateTime  @updatedAt
+  FirstReminder      Boolean   @default(false)
+  SecondReminder     Boolean   @default(false)
+  ThirdReminder      Boolean   @default(false)
+  FourthReminder     Boolean   @default(false)
+  DueTimeReminder    Boolean   @default(false)
+  lastReminderSentAt DateTime?
 
   challenge    Challenge?     @relation(fields: [challengeId], references: [id])
   user         User           @relation(fields: [userId], references: [id])
@@ -193,4 +197,16 @@ model Notification {
   follower  Follower?  @relation(fields: [followerId], references: [id])
   User      User?      @relation(fields: [userId], references: [id])
   userId    String?    @db.ObjectId
+}
+
+model Subscribe {
+  id            String   @id @default(auto()) @map("_id") @db.ObjectId
+  subscribeToId String   @db.ObjectId
+  subscriberId  String   @db.ObjectId
+  subscribedAt  DateTime @default(now())
+
+  subscribeTo User    @relation("subscribeTo", fields: [subscribeToId], references: [id])
+  subscriber  User    @relation("subscriber", fields: [subscriberId], references: [id])
+  User        User?   @relation(fields: [userId], references: [id])
+  userId      String? @db.ObjectId
 }

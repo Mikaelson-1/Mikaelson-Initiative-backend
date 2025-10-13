@@ -3,30 +3,24 @@ import { logger } from "../utils";
 import { sendReminderEmail, sendTaskOverDueEmail } from "../libs/email";
 import prisma from "../config/prismadb";
 import { getDay } from "../utils/date";
+import { notificationQueue } from "../queues/notification.queue";
+import { canSendReminder } from "../utils/helper";
 
 /**  Here is a cron background job to send reminder emails to any user that his/her task 
  is not yet marked as completed within 24 hours */
 
 const { today, tomorrow, yesterday } = getDay();
 // Run every minute
-cron.schedule("* * * * *", async () => {
+cron.schedule("*/10 * * * *", async () => {
   try {
-    //logger.info("Checking Incompleted Tasks reminder....");
+    logger.info("Checking Incompleted Tasks reminder....");
     /** Had to comment out the log so i wont have a log every minute 😅 */
     const now = new Date();
 
-    const TwoHoursAgo = new Date(
-      Math.max(now.getTime() - 2 * 60 * 1000, now.getTime())
-    );
-    const SixHoursAgo = new Date(
-      Math.max(now.getTime() - 6 * 60 * 1000, now.getTime())
-    );
-    const TwelveHoursAgo = new Date(
-      Math.max(now.getTime() - 12 * 60 * 1000, now.getTime())
-    );
-    const TwentyThreeHoursAgo = new Date(
-      Math.max(now.getTime() - 23 * 60 * 1000, now.getTime())
-    );
+    const TwoHoursAgo = new Date(now.getTime() - 2 * 60 * 1000);
+    const SixHoursAgo = new Date(now.getTime() - 6 * 60 * 1000);
+    const TwelveHoursAgo = new Date(now.getTime() - 12 * 60 * 1000);
+    const TwentyThreeHoursAgo = new Date(now.getTime() - 23 * 60 * 1000);
 
     const TwoHoursReminder = async () => {
       // Task created >= today <= twohoursAgo
@@ -48,6 +42,11 @@ cron.schedule("* * * * *", async () => {
 
       for (const task of tasksWithoutDueTime) {
         try {
+          await notificationQueue.add("sendNotification", {
+            type: "task",
+            data: task,
+            time: "2 hours",
+          });
           await sendReminderEmail(task.task, "2 hours", task.user.email);
           await prisma.habit.update({
             where: { id: task.id },
@@ -82,6 +81,11 @@ cron.schedule("* * * * *", async () => {
       const tasksWithoutDueTime = tasks.filter((task) => !task.dueTime);
       for (const task of tasksWithoutDueTime) {
         try {
+          await notificationQueue.add("sendNotification", {
+            type: "task",
+            data: task,
+            time: "6 hours",
+          });
           await sendReminderEmail(task.task, "6 hours", task.user.email);
           await prisma.habit.update({
             where: { id: task.id },
@@ -117,6 +121,11 @@ cron.schedule("* * * * *", async () => {
 
       for (const task of tasksWithoutDueTime) {
         try {
+          await notificationQueue.add("sendNotification", {
+            type: "task",
+            data: task,
+            time: "12 hours",
+          });
           await sendReminderEmail(task.task, "12 hours", task.user.email);
           await prisma.habit.update({
             where: { id: task.id },
@@ -152,6 +161,11 @@ cron.schedule("* * * * *", async () => {
 
       for (const task of tasksWithoutDueTime) {
         try {
+          await notificationQueue.add("sendNotification", {
+            type: "task",
+            data: task,
+            time: "1 hour",
+          });
           await sendReminderEmail(task.task, "23 hours", task.user.email);
           await prisma.habit.update({
             where: { id: task.id },
@@ -189,6 +203,11 @@ cron.schedule("* * * * *", async () => {
 
       for (const task of tasks) {
         try {
+          await notificationQueue.add("sendNotification", {
+            type: "task",
+            data: task,
+            type2: "due",
+          });
           await sendTaskOverDueEmail(task.task, today, task.user.email);
           await prisma.habit.update({
             where: { id: task.id },
@@ -227,6 +246,11 @@ cron.schedule("* * * * *", async () => {
           try {
             if (now >= dueTime) {
               // Task is overdue
+              await notificationQueue.add("sendNotification", {
+                type: "task",
+                data: task,
+                type2: "due",
+              });
               await sendTaskOverDueEmail(task.task, dueTime, task.user.email);
               await prisma.habit.update({
                 where: { id: task.id },
@@ -273,17 +297,27 @@ cron.schedule("* * * * *", async () => {
           );
 
           try {
-            if (now >= twoHoursBeforeDue && now < dueTime) {
+            if (
+              now >= twoHoursBeforeDue &&
+              now < dueTime &&
+              canSendReminder(task)
+            ) {
               // 2 hours before due
+              await notificationQueue.add("sendNotification", {
+                type: "task",
+                data: task,
+                time: "2 hours",
+              });
               await sendReminderEmail(
                 task.task,
                 "2 hours",
                 task.user.email,
                 task.id
               );
+
               await prisma.habit.update({
                 where: { id: task.id },
-                data: { FirstReminder: true },
+                data: { FirstReminder: true, lastReminderSentAt: new Date() },
               });
 
               logger.info(`2-hours before due reminder sent: ${task.id}`);
@@ -327,8 +361,17 @@ cron.schedule("* * * * *", async () => {
           );
 
           try {
-            if (now >= thirtyMinsBeforeDue && now < dueTime) {
+            if (
+              now >= thirtyMinsBeforeDue &&
+              now < dueTime &&
+              canSendReminder(task)
+            ) {
               // 30 minutes before due
+              await notificationQueue.add("sendNotification", {
+                type: "task",
+                data: task,
+                time: "30 minutes",
+              });
               await sendReminderEmail(
                 task.task,
                 "30 minutes",
@@ -337,7 +380,7 @@ cron.schedule("* * * * *", async () => {
               );
               await prisma.habit.update({
                 where: { id: task.id },
-                data: { SecondReminder: true },
+                data: { SecondReminder: true, lastReminderSentAt: new Date() },
               });
 
               logger.info(`30 minutes before due reminder sent: ${task.id}`);
@@ -364,7 +407,7 @@ cron.schedule("* * * * *", async () => {
       TasksWithDueTimeThirtyMinutesToDue(),
     ]);
 
-    //logger.info("Reminder check completed");
+    logger.info("Reminder check completed");
   } catch (error) {
     logger.error("Error in reminder cron job:" + error);
   }

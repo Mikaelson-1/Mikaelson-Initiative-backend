@@ -6,9 +6,11 @@ import {
   Challenge,
   Comment,
   Follower,
+  Habit,
   Like,
   Members,
   Post,
+  Subscribe,
 } from "../generated/prisma";
 import { bullRedis } from "../utils/bullmq-redis";
 import RedisService from "../services/redis.service";
@@ -18,6 +20,7 @@ interface NotificationJobData {
   data: any;
   data2?: any;
   type2?: string;
+  time?: string;
 }
 
 const redisService = new RedisService();
@@ -25,7 +28,7 @@ const redisService = new RedisService();
 export const notificationWorker = new Worker<NotificationJobData>(
   "notifications",
   async (job: Job<NotificationJobData>) => {
-    const { type, data, data2, type2 } = job.data;
+    const { type, data, data2, type2, time } = job.data;
 
     await Promise.all([
       redisService.delByPattern("Notifications:*"),
@@ -234,6 +237,54 @@ export const notificationWorker = new Worker<NotificationJobData>(
         break;
       }
 
+      case "post": {
+        const subscribers = data as Subscribe[];
+        const validSubscribers = subscribers.filter(
+          (sub) => !!sub.subscriberId
+        );
+
+        if (validSubscribers.length === 0) {
+          logger.info("No valid subscribers found for this post.");
+          break;
+        }
+        const postId = data2.id;
+
+        const post = await prisma.post.findUnique({
+          where: {
+            id: postId,
+          },
+          include: {
+            user: true,
+            Like: true,
+            Comment: true,
+            challenge: true,
+            repostOf: {
+              include: {
+                user: true,
+              },
+            },
+          },
+        });
+        const event_type = "post";
+
+        const message = `${post?.user.username} just ${
+          type2 === "repost" ? "reposted" : "posted"
+        }"${post?.post}".`;
+
+        const notification = await prisma.notification.createMany({
+          data: subscribers.map((sub) => ({
+            actorId: post?.userId as string,
+            receiverId: sub.subscriberId,
+            event_type,
+            message,
+            postId: post?.id as string,
+          })),
+        });
+
+        logger.info(notification);
+        break;
+      }
+
       case "member": {
         const memberPayload = data as Members;
         logger.info("Id:" + memberPayload.id);
@@ -362,6 +413,57 @@ export const notificationWorker = new Worker<NotificationJobData>(
 
           logger.info(notification);
         }
+        break;
+      }
+
+      case "task": {
+        const taskPayload = data as Habit;
+        logger.info("Id:" + taskPayload.id);
+        const Task = await prisma.habit.findUnique({
+          where: {
+            id: taskPayload.id,
+          },
+          include: {
+            user: true,
+            challenge: {
+              include: {
+                user: true,
+              },
+            },
+          },
+        });
+
+        const receiverId = Task?.user.clerkId;
+        const actorId = Task?.user.clerkId;
+        const event_type = "task";
+        const message =
+          type2 === "due"
+            ? `Your task "${Task?.task}" is due.`
+            : `You have less than ${time} left to complete your task "${Task?.task}".`;
+
+        const notification = await prisma.notification.create({
+          data: {
+            actor: {
+              connect: {
+                clerkId: actorId,
+              },
+            },
+            receiver: {
+              connect: {
+                clerkId: receiverId,
+              },
+            },
+            event_type,
+            message,
+            task: {
+              connect: {
+                id: Task?.id,
+              },
+            },
+          },
+        });
+
+        logger.info(notification);
         break;
       }
     }

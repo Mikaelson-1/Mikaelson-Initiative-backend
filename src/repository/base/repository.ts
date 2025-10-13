@@ -708,7 +708,9 @@ export class Repository<T> implements IRepository<T> {
       case "notifications":
         return this.prismaClient.notification.findMany({
           where: {
-            receiverId: id as string,
+            receiver: {
+              clerkId: id as string,
+            },
           } satisfies Prisma.NotificationWhereInput,
           include: {
             post: true,

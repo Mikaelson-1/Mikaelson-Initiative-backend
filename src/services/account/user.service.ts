@@ -1,4 +1,4 @@
-import { Follower, User } from "../../generated/prisma";
+import { Follower, Subscribe, User } from "../../generated/prisma";
 import { Repository } from "../../repository/base/repository";
 import { logger } from "../../utils";
 import RedisService from "./../redis.service";
@@ -10,6 +10,7 @@ import { emailQueue } from "../../queues/email.queue";
 
 const userRepository = new Repository<User>(prisma.user);
 const followRepository = new Repository<Follower>(prisma.follower);
+const subscribeRepository = new Repository<User>(prisma.subscribe);
 const redisService = new RedisService();
 
 // Create user and connect the clerkId from the frontend
@@ -199,6 +200,20 @@ export default class UserService {
       return likes as T[];
     } catch (error) {
       logger.info("Something went wrong with getting user likes" + error);
+      return [];
+    }
+  }
+
+  // Subscribe to a user via turn on notification bell to get notified whenever user post
+  async subscribeToUser<T>(data: T) {
+    try {
+      const subscribe = await subscribeRepository.create(data);
+      if (subscribe) {
+        logger.info(subscribe);
+        return subscribe as Subscribe | any;
+      }
+    } catch (error) {
+      logger.info("Something went wrong with subscribing to user" + error);
       return [];
     }
   }

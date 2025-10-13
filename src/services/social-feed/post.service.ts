@@ -16,15 +16,30 @@ export default class PostService {
     if (!data.post) {
       logger.error("Post is required!");
     }
-
     await Promise.all([
       redisService.delByPattern("Posts:*"),
       redisService.delByPattern("FollowingPosts:*"),
       redisService.delByPattern("Post:*"),
       redisService.delByPattern("TodayPosts"),
     ]);
+    const post = await postRepository.create(data as any);
+    if (post.id) {
+      const subscribers = await prisma.subscribe.findMany({
+        where: {
+          subscribeToId: post.userId,
+        },
+        select: {
+          subscriberId: true,
+        },
+      });
 
-    return postRepository.create(data as any);
+      await notificationQueue.add("sendNotification", {
+        type: "post",
+        data: subscribers,
+        data2: post,
+      });
+      return post;
+    }
   }
 
   // Get all posts
@@ -220,6 +235,22 @@ export default class PostService {
       await notificationQueue.add("sendNotification", {
         type: "repost",
         data: post,
+      });
+
+      const subscribers = await prisma.subscribe.findMany({
+        where: {
+          subscribeToId: post.userId,
+        },
+        select: {
+          subscriberId: true,
+        },
+      });
+
+      await notificationQueue.add("sendNotification", {
+        type: "post",
+        data: subscribers,
+        data2: post,
+        type2: "repost",
       });
       return post;
     }

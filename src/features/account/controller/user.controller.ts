@@ -314,6 +314,43 @@ class UserController {
         .json(new ApiError(500, "Something wwent wrong!,", [error]));
     }
   }
+
+  static async subscirbeToUser(req: express.Request, res: express.Response) {
+    if (!req.body) {
+      logger.error("Missing request body");
+      return res
+        .status(400)
+        .json(new ApiError(400, "Missing request body", []));
+    }
+
+    const { subscribeToId, clerkId } = req.body;
+
+    try {
+      const subscribe = await userService.subscribeToUser({
+        subscribeTo: {
+          connect: {
+            clerkId: subscribeToId,
+          },
+        },
+        subscriber: {
+          connect: {
+            clerkId: clerkId,
+          },
+        },
+      } satisfies Prisma.SubscribeCreateInput);
+      logger.info(subscribe);
+      res
+        .status(201)
+        .json(
+          new ApiSuccess(201, "You have subscribed to this user!,", subscribe)
+        );
+    } catch (error) {
+      logger.error(error);
+      res
+        .status(500)
+        .json(new ApiError(500, "Something wwent wrong!,", [error]));
+    }
+  }
 }
 
 export default UserController;

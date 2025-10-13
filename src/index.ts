@@ -13,6 +13,7 @@ import challengeRouter from "./routes/v1/challenge.route";
 import commentRouter from "./routes/v1/comment.route";
 import bookmarkRouter from "./routes/v1/bookmark.route";
 import taskRouter from "./routes/v1/task.route";
+import notificationRouter from "./routes/v1/notification.route";
 import "./jobs/sendTaskReminders.job";
 import { getHoursLeftToday } from "./utils/date";
 import checkDbHealth from "./utils/dbhealth";
@@ -49,9 +50,12 @@ app.use("/api/v1/bookmarks", bookmarkRouter);
 
 app.use("/api/v1/tasks", taskRouter);
 
+app.use("/api/v1/notifications", notificationRouter);
+
 const startServer = async () => {
   getHoursLeftToday();
   checkDbHealth();
+  console.log(new Date())
   server.listen(PORT, () => logger.info(`Server is running at PORT ${PORT}`));
 };
 
