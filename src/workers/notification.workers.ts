@@ -25,6 +25,8 @@ interface NotificationJobData {
 
 const redisService = new RedisService();
 
+/** Here is the notification worker that handles sending notifications to receivers */
+
 export const notificationWorker = new Worker<NotificationJobData>(
   "notifications",
   async (job: Job<NotificationJobData>) => {
@@ -35,6 +37,7 @@ export const notificationWorker = new Worker<NotificationJobData>(
       redisService.delByPattern("Notification:*"),
     ]);
 
+    // Notify when a post is liked
     switch (type) {
       case "like": {
         const likePayload = data as Like;
@@ -93,6 +96,7 @@ export const notificationWorker = new Worker<NotificationJobData>(
         break;
       }
 
+      // Notify when a comment is made
       case "comment": {
         const commentPayload = data as Comment;
         logger.info("Id:" + commentPayload.id);
@@ -142,6 +146,7 @@ export const notificationWorker = new Worker<NotificationJobData>(
         break;
       }
 
+      // Notofy when a user follows you
       case "follow": {
         const followPayload = data as Follower;
         logger.info("Id:" + followPayload.id);
@@ -186,6 +191,7 @@ export const notificationWorker = new Worker<NotificationJobData>(
         break;
       }
 
+      // Notify when a user repost your post
       case "repost": {
         const repostPayload = data as Follower;
         logger.info("Id:" + repostPayload.id);
@@ -237,6 +243,7 @@ export const notificationWorker = new Worker<NotificationJobData>(
         break;
       }
 
+      // Notify to all subscribed user that you made a post
       case "post": {
         const subscribers = data as Subscribe[];
         const validSubscribers = subscribers.filter(
@@ -285,6 +292,7 @@ export const notificationWorker = new Worker<NotificationJobData>(
         break;
       }
 
+      // Notify challenge owner when you join a challenge
       case "member": {
         const memberPayload = data as Members;
         logger.info("Id:" + memberPayload.id);
@@ -333,6 +341,7 @@ export const notificationWorker = new Worker<NotificationJobData>(
         break;
       }
 
+      // Notify you and owner when you have completed a challenge
       case "challengeCompleted": {
         const challengePayload = data as Challenge;
         const userpost = data2 as Post[];
@@ -416,6 +425,7 @@ export const notificationWorker = new Worker<NotificationJobData>(
         break;
       }
 
+      // Remind you about your task
       case "task": {
         const taskPayload = data as Habit;
         logger.info("Id:" + taskPayload.id);

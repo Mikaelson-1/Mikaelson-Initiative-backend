@@ -19,6 +19,9 @@ import { getHoursLeftToday } from "./utils/date";
 import checkDbHealth from "./utils/dbhealth";
 import "./workers/notification.workers";
 import "./workers/email.worker";
+import swaggerUi from "swagger-ui-express";
+import swaggerJSDoc from "swagger-jsdoc";
+import { setupSwagger } from "./swagger";
 
 const app = express();
 const server = http.createServer(app);
@@ -35,6 +38,20 @@ app.use(cookieParser());
 app.use(cors(corsOptions));
 
 app.use(limiter);
+
+const options = {
+  definition: {
+    openapi: "3.0.0",
+    info: {
+      title: "My API Documentation",
+      version: "1.0.0",
+    },
+  },
+  apis: ["./routes/v1/*.ts"],
+};
+
+const swaggerSpec = swaggerJSDoc(options);
+app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
 app.use("/api/v1/users", userRouter);
 
@@ -55,7 +72,7 @@ app.use("/api/v1/notifications", notificationRouter);
 const startServer = async () => {
   getHoursLeftToday();
   checkDbHealth();
-  console.log(new Date())
+  console.log(new Date());
   server.listen(PORT, () => logger.info(`Server is running at PORT ${PORT}`));
 };
 

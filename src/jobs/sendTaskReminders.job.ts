@@ -13,14 +13,14 @@ const { today, tomorrow, yesterday } = getDay();
 // Run every minute
 cron.schedule("*/10 * * * *", async () => {
   try {
+       /** Had to comment out the log so i wont have a log every minute 😅 */
     logger.info("Checking Incompleted Tasks reminder....");
-    /** Had to comment out the log so i wont have a log every minute 😅 */
     const now = new Date();
 
-    const TwoHoursAgo = new Date(now.getTime() - 2 * 60 * 1000);
-    const SixHoursAgo = new Date(now.getTime() - 6 * 60 * 1000);
-    const TwelveHoursAgo = new Date(now.getTime() - 12 * 60 * 1000);
-    const TwentyThreeHoursAgo = new Date(now.getTime() - 23 * 60 * 1000);
+    const TwoHoursAgo = new Date(now.getTime() - 2 * 60 * 60 * 1000);
+    const SixHoursAgo = new Date(now.getTime() - 6 * 60 * 60 * 1000);
+    const TwelveHoursAgo = new Date(now.getTime() - 12 * 60 * 60 * 1000);
+    const TwentyThreeHoursAgo = new Date(now.getTime() - 23 * 60 * 60 * 1000);
 
     const TwoHoursReminder = async () => {
       // Task created >= today <= twohoursAgo

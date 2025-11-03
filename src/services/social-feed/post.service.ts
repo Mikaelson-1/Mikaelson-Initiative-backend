@@ -197,7 +197,7 @@ export default class PostService {
 
         return tagsMap as T;
       }
-      const posts = await postRepository.findAll("TodayPost");
+      const posts = await postRepository.findAll("post");
 
       // collect tags and group posts
       const tagsMap: Record<string, Post[]> = {};
@@ -213,6 +213,20 @@ export default class PostService {
           });
         }
       });
+
+      /* const sortedTagPosts = Object.entries(tagsMap) // [[tag, posts[]], ...]
+        .sort((a, b) => b[1].length - a[1].length); // sort by number of posts
+        logger.info(sortedTagPosts)
+
+      Object.entries(tagsMap as any).map(([tags, posts]) => {
+        logger.info(tags);
+        const postLength = (posts as Post[]).length;
+        logger.info(`${postLength} posts is in #${tags}`);
+        (posts as Post[]).forEach((post) => {
+          //logger.info(`Post: ${post.post}`);
+        });
+      });
+      //logger.info(tagPosts);*/
 
       return tagsMap as T;
     } catch (error) {

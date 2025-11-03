@@ -217,18 +217,6 @@ class PostController {
   static async getTagsPosts(req: express.Request, res: express.Response) {
     try {
       const tagPosts = await postService.getAllTags();
-      const sortedTagPosts = Object.entries(tagPosts as any[]) // [[tag, posts[]], ...]
-        .sort((a, b) => b[1].length - a[1].length); // sort by number of posts
-
-      Object.entries(tagPosts as any).map(([tags, posts]) => {
-        logger.info(tags);
-        const postLength = (posts as Post[]).length;
-        logger.info(`${postLength} posts is in #${tags}`);
-        (posts as Post[]).forEach((post) => {
-          //logger.info(`Post: ${post.post}`);
-        });
-      });
-      //logger.info(tagPosts);
       res
         .status(200)
         .json(
@@ -264,6 +252,15 @@ class PostController {
       const validate = repostValidation.parse(req.body);
       const { postId, post, clerkId }: repostType = validate;
 
+      const files = req.files as Express.Multer.File[];
+      logger.info(files?.map((file) => file.originalname));
+
+      let presignedUrls: string[] = [];
+
+      if (files && files.length > 0) {
+        presignedUrls = await getPresignedUrls(files);
+      }
+
       const repost = await postService.repost({
         repostOf: {
           connect: {
@@ -271,6 +268,7 @@ class PostController {
           },
         },
         post,
+        files: presignedUrls,
         user: {
           connect: {
             clerkId: clerkId,

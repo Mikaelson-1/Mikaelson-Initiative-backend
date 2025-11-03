@@ -14,7 +14,7 @@ postRouter.post("/", upload.array("files"), PostController.createPost);
 postRouter.get("/", PostController.getPosts);
 postRouter.get("/today", PostController.AllPostCreatedToday);
 postRouter.get("/tags", PostController.getTagsPosts);
-postRouter.post("/repost", PostController.repost);
+postRouter.post("/repost", upload.array("files"), PostController.repost);
 postRouter.get("/:id", PostController.getPostById);
 postRouter.patch("/:id", PostController.updatePost);
 postRouter.delete("/:id", PostController.deletePost);

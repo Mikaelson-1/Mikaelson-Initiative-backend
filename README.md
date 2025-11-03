@@ -1,11 +1,13 @@
 # Mikaelson Initiative Server - Features Documentation
 
 ## Overview
+
 This document provides a comprehensive overview of all server-side features implemented in the Mikaelson Initiative platform. The server is built with Express.js, TypeScript, MongoDB (Prisma ORM), and Redis, designed to support a social productivity platform that helps users build better habits through community engagement.
 
 ## 🏗️ Architecture & Tech Stack
 
 ### Core Technologies
+
 - **Backend Framework**: Express.js with TypeScript
 - **Database**: MongoDB with Prisma ORM
 - **Caching**: Redis for session management and performance
@@ -18,6 +20,7 @@ This document provides a comprehensive overview of all server-side features impl
 - **Background Jobs**: Node-cron for scheduled tasks
 
 ### Project Structure
+
 ```
 Server/src/
 ├── config/           # Database and email configuration
@@ -46,6 +49,7 @@ Server/src/
 ### Base URL: `/api/v1`
 
 ### 1. User Management (`/users`)
+
 - `GET /welcome` - API welcome message
 - `GET /top/contributors` - Get top contributing users
 - `POST /` - Create new user account
@@ -60,6 +64,7 @@ Server/src/
 - `DELETE /:id` - Delete user account
 
 ### 2. Social Posts (`/posts`)
+
 - `GET /welcome` - API welcome message
 - `POST /` - Create new post (with file attachments)
 - `GET /` - Get all posts
@@ -74,12 +79,14 @@ Server/src/
 - `PATCH /:id/views` - Track post views
 
 ### 3. Likes System (`/likes`)
+
 - `GET /welcome` - API welcome message
 - `POST /` - Create like (post or comment)
 - `GET /:id` - Get likes for content
 - `DELETE /:id` - Remove like
 
 ### 4. Comments (`/comments`)
+
 - `GET /welcome` - API welcome message
 - `POST /` - Create comment (with file attachments)
 - `GET /post/:id` - Get comments for post
@@ -88,6 +95,7 @@ Server/src/
 - `DELETE /:id` - Delete comment
 
 ### 5. Bookmarks (`/bookmarks`)
+
 - `GET /welcome` - API welcome message
 - `POST /` - Create bookmark
 - `GET /user/:id` - Get user's bookmarks
@@ -95,6 +103,7 @@ Server/src/
 - `DELETE /:id` - Remove bookmark
 
 ### 6. Challenges (`/challenges`)
+
 - `GET /welcome` - API welcome message
 - `POST /` - Create new challenge
 - `GET /` - Get all challenges
@@ -107,6 +116,7 @@ Server/src/
 - `GET /:id/:userId` - Get user's challenge posts
 
 ### 7. Tasks/Habits (`/tasks`)
+
 - `GET /welcome` - API welcome message
 - `POST /` - Create new task/habit
 - `GET /:id` - Get task by ID
@@ -115,6 +125,7 @@ Server/src/
 - `GET /:id/user` - Get user's tasks
 
 ### 8. Notifications (`/notifications`) - **NEW**
+
 - `GET /welcome` - API welcome message
 - `GET /:clerkId` - Get user's notifications
 - `PATCH /:id/read` - Mark notification as read
@@ -123,12 +134,14 @@ Server/src/
 ## 🎯 Key Features
 
 ### 1. User Authentication & Profile Management
+
 - **Clerk Integration**: Seamless authentication with ClerkId
 - **Profile Management**: Update username, bio, uniqueName
 - **File Uploads**: Profile and cover image uploads via AWS S3
 - **Social Features**: Follow/unfollow system with follower tracking
 
 ### 2. Social Media Platform
+
 - **Content Creation**: Create posts with text and file attachments
 - **Media Upload**: Multiple file upload support (images, documents)
 - **Engagement**: Like, comment, bookmark, and repost functionality
@@ -136,19 +149,22 @@ Server/src/
 - **Tagging System**: Organize content with tags
 
 ### 3. Habit Tracking & Task Management
+
 - **Task Creation**: Create habits and tasks with descriptions
 - **Due Time Management**: Set specific due times for tasks
 - **Completion Tracking**: Mark tasks as completed
 - **Progress Monitoring**: Track user's task completion history
 
 ### 4. Enhanced Automated Reminder System - **UPDATED**
+
 **Background Cron Job** (runs every minute):
+
 - **2-hour reminder**: For tasks created 2+ hours ago
 - **6-hour reminder**: For tasks not completed after 6 hours
 - **12-hour reminder**: For tasks not completed after 12 hours
 - **23-hour reminder**: Final reminder before day ends
 - **End-of-day overdue**: Notifications for incomplete tasks
-- **Enhanced Time-based reminders**: 
+- **Enhanced Time-based reminders**:
   - 2 hours before due time
   - 30 minutes before due time
   - Overdue notifications for missed deadlines
@@ -156,18 +172,21 @@ Server/src/
   - DueTimeReminder system for time-sensitive tasks
 
 ### 5. Challenge System
+
 - **Community Challenges**: Create and join group challenges
 - **Member Management**: Add/remove members from challenges
 - **Challenge Posts**: Share progress within challenges
 - **Progress Tracking**: Monitor challenge participation
 
 ### 6. Email Notification System
+
 - **Welcome Emails**: Sent to new users upon registration
 - **Task Reminders**: Personalized reminder emails with HTML formatting
 - **Overdue Notifications**: Alert users about missed deadlines
 - **SMTP Integration**: Gmail SMTP for reliable email delivery
 
 ### 7. Real-Time Notification System - **NEW**
+
 - **BullMQ Queue System**: Asynchronous notification processing
 - **Event-Driven Notifications**: Automatic notifications for likes, comments, follows, reposts, and challenge activities
 - **Notification Workers**: Background processing with concurrency control
@@ -176,6 +195,7 @@ Server/src/
 - **Scalable Architecture**: Queue-based system for high-volume notifications
 
 ### 8. File Storage & AWS Integration
+
 - **AWS S3 Storage**: Secure file upload and storage
 - **Presigned URLs**: Secure file upload with temporary access
 - **Multiple File Support**: Upload various file types
@@ -184,6 +204,7 @@ Server/src/
 ## 🔧 Technical Implementation
 
 ### Database Schema (MongoDB with Prisma)
+
 ```prisma
 - User: Profile information, authentication data
 - Follower: User relationship tracking
@@ -198,6 +219,7 @@ Server/src/
 ```
 
 ### Security Features
+
 - **Rate Limiting**: 100 requests per 15 minutes per IP
 - **Input Validation**: Zod schemas for all endpoints
 - **CORS Configuration**: Secure cross-origin requests
@@ -205,6 +227,7 @@ Server/src/
 - **Error Handling**: Standardized API error responses
 
 ### Performance Optimizations
+
 - **Redis Caching**: Session and data caching
 - **Response Compression**: Gzip compression for responses
 - **Database Indexing**: Optimized queries with Prisma
@@ -215,16 +238,19 @@ Server/src/
 ## 📧 Email Templates
 
 ### Welcome Email
+
 - Sent to new users upon registration
 - HTML formatted with Mikaelson branding
 - Encourages engagement and community participation
 
 ### Task Reminder Emails
+
 - Personalized based on time remaining
 - Dynamic content based on task status
 - Motivational messaging to encourage completion
 
 ### Overdue Notifications
+
 - Alert users about missed deadlines
 - Provide context about overdue tasks
 - Encourage immediate action
@@ -232,9 +258,11 @@ Server/src/
 ## 🔄 Background Jobs
 
 ### Task Reminder Cron Job
+
 **Schedule**: Every minute (`* * * * *`)
 
 **Functions**:
+
 1. `TwoHoursReminder()` - 2-hour task reminders
 2. `SixHoursReminder()` - 6-hour task reminders
 3. `TwelveHoursReminder()` - 12-hour task reminders
@@ -245,11 +273,13 @@ Server/src/
 8. `TasksWithDueTimeThirtyMinutesToDue()` - 30-minute pre-due reminders
 
 ### Notification Worker System - **NEW**
+
 **Queue**: `notifications` (BullMQ)
 **Concurrency**: 5 concurrent jobs
 **Connection**: Redis-based BullMQ
 
 **Notification Types**:
+
 1. **Like Notifications**: When users like posts or comments
 2. **Comment Notifications**: When users comment on posts
 3. **Follow Notifications**: When users follow each other
@@ -258,6 +288,7 @@ Server/src/
 6. **Challenge Completion**: When users complete challenges (notifies both user and creator)
 
 **Worker Features**:
+
 - Automatic notification creation with rich context
 - Actor and receiver relationship tracking
 - Event type classification
@@ -267,6 +298,7 @@ Server/src/
 ## 🛠️ Development Setup
 
 ### Prerequisites
+
 - Node.js (v16+)
 - MongoDB database
 - Redis server (for caching and BullMQ)
@@ -274,6 +306,7 @@ Server/src/
 - SMTP email credentials
 
 ### Environment Variables
+
 ```env
 DATABASE_URL=mongodb://...
 REDIS_URL=redis://...
@@ -285,6 +318,7 @@ SMTP_PASSWORD=...
 ```
 
 ### Installation & Running
+
 ```bash
 npm install
 npm run start  # Development with nodemon
@@ -293,6 +327,7 @@ npm run start  # Development with nodemon
 ## 📊 API Response Format
 
 ### Success Response
+
 ```json
 {
   "success": true,
@@ -303,6 +338,7 @@ npm run start  # Development with nodemon
 ```
 
 ### Error Response
+
 ```json
 {
   "success": false,
@@ -323,6 +359,7 @@ npm run start  # Development with nodemon
 ## 🚀 Future Enhancements
 
 ### Planned Features
+
 - WebSocket integration for real-time notifications
 - Advanced analytics dashboard
 - Push notification system
@@ -333,6 +370,7 @@ npm run start  # Development with nodemon
 - Bulk notification operations
 
 ### Performance Improvements
+
 - Database query optimization
 - Redis caching strategies
 - CDN integration for file delivery
@@ -347,3 +385,5 @@ For technical questions or feature requests, please contact the development team
 
 **Last Updated**: October 2025
 **Version**: 1.1.0
+
+Design and built by Esan Samuel
