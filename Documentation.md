@@ -132,6 +132,7 @@ GET /api/v1/users
 **Query Parameters:**
 - `page` (optional): Page number
 - `limit` (optional): Items per page
+- `filter` (optional): Search for users
 
 #### Follow/Unfollow User
 ```http
@@ -224,6 +225,7 @@ GET /api/v1/posts
 **Query Parameters:**
 - `page` (optional): Page number
 - `limit` (optional): Items per page
+- `filter` (optional): Search for posts
 
 #### Get Today's Posts
 ```http
