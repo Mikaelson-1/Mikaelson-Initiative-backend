@@ -638,8 +638,3 @@ interface Notification {
   updatedAt: Date;
 }
 ```
-
-## ❌ Error Handling
-
-### Common HTTP Status Codes
-- 
