@@ -56,6 +56,7 @@ export default class PostService {
       const cachedPosts = await redisService.get(cachedKey);
       if (cachedPosts) {
         logger.info(`Cached Posts:${cachedPosts}`);
+        logger.info(cachedPosts);
         return cachedPosts as T;
       } else {
         const posts = await postRepository.findAll(
@@ -65,6 +66,7 @@ export default class PostService {
           params
         );
         await redisService.set(cachedKey, posts, 600);
+        logger.info(posts);
         return posts as T;
       }
     } catch (error) {

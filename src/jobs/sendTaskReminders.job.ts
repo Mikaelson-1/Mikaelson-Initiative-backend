@@ -10,7 +10,7 @@ import { canSendReminder } from "../utils/helper";
  is not yet marked as completed within 24 hours */
 
 const { today, tomorrow, yesterday } = getDay();
-// Run every minute
+// Run every 10 minutes
 cron.schedule("*/10 * * * *", async () => {
   try {
        /** Had to comment out the log so i wont have a log every minute 😅 */

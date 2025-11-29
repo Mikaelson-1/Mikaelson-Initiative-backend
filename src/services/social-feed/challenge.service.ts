@@ -7,10 +7,17 @@ import crypto from "crypto";
 import { countUniquePostDays } from "../../utils/date";
 import NotificationService from "../notification.service";
 import { notificationQueue } from "../../queues/notification.queue";
+import { tryCatch } from "bullmq";
 
 type UserChallengePostsResult = {
   posts: Post[];
   percentageOfPosts: number;
+};
+
+type ChallengePostsResult = {
+  posts: Post[];
+  percentageOfPosts: number[];
+  numOfDaysPosted: number;
 };
 
 // A challenge is created and users can create post inside a challenge
@@ -69,6 +76,37 @@ export default class ChallengeService {
       const challenge = await challengeRepository.findById(id, "challenge");
       await redisService.set(cachedKey, challenge, 600);
       return challenge as T;
+    }
+  }
+
+  async getAllChallengePosts<T>(): Promise<ChallengePostsResult | null> {
+    try {
+      const posts = await postRepository.findAll("challengePosts");
+
+      const percentageOfPosts = await Promise.all(
+        posts.map(async (post) => {
+          const challenge = await challengeRepository.findById(
+            post?.challengeId!,
+            "challenge"
+          );
+
+          const numOfDaysPosted = countUniquePostDays(posts);
+          //const numOfPosts = posts.length;
+          const numOfChallengeDays = challenge?.days ?? 0;
+          const percentage =
+            numOfChallengeDays > 0
+              ? (numOfDaysPosted / numOfChallengeDays) * 100
+              : 0;
+          return percentage;
+        })
+      );
+
+      const numOfDaysPosted = countUniquePostDays(posts);
+
+      return { posts, percentageOfPosts, numOfDaysPosted };
+    } catch (error) {
+      logger.error(error);
+      return null;
     }
   }
 

@@ -12,6 +12,7 @@ challengeRouter.get(
 
 challengeRouter.post("/", ChallengeController.createChallenge);
 challengeRouter.get("/", ChallengeController.getChallenges);
+challengeRouter.get("/posts", ChallengeController.getChallengePosts);
 challengeRouter.post("/members", ChallengeController.addMemberToChallenge);
 challengeRouter.get("/:id", ChallengeController.getChallengeById);
 challengeRouter.patch("/:id", ChallengeController.updateChallenge);

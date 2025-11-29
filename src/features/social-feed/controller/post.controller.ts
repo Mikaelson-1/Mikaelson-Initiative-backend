@@ -4,7 +4,7 @@ import { ApiError, ApiSuccess, logger } from "../../../utils";
 import prisma from "../../../config/prismadb";
 import PostService from "../../../services/social-feed/post.service";
 import { getPresignedUrls } from "../../../libs/aws";
-import { Post, User } from "../../../generated/prisma";
+import { Post, Prisma, User } from "../../../generated/prisma";
 import { skip } from "@prisma/client/runtime/library";
 import {
   createPostType,
@@ -38,7 +38,7 @@ class PostController {
       presignedUrls = await getPresignedUrls(files);
     }
 
-    const data: any = {
+    const data: Prisma.PostCreateInput = {
       post,
       files: presignedUrls,
       tags: tags || [],

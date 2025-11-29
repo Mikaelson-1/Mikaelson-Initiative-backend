@@ -90,7 +90,7 @@ export default class UserService {
   async getTopContributors<T>(): Promise<T | null | User[]> {
     try {
       const users = await userRepository.findAll("topContributors");
-      return users as User[] | T;
+      return users.slice(0, 10) as User[] | T;
     } catch (error) {
       logger.info("Something went wrong with getting top contributors" + error);
       return [] as T;

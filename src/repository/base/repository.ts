@@ -42,6 +42,13 @@ export class Repository<T> implements IRepository<T> {
           where: {
             clerkId: id as string,
           },
+          include: {
+            Post: true,
+            following: true,
+            Follower: true,
+            Bookmark: true,
+            Habit: true,
+          } satisfies Prisma.UserInclude,
         } satisfies Parameters<typeof prisma.user.findUnique>[0]) as Promise<T | null>;
         logger.info(user);
         return user;
@@ -162,7 +169,8 @@ export class Repository<T> implements IRepository<T> {
       | "userLikes"
       | "userChallengePosts"
       | "getFollowingPosts"
-      | "notifications",
+      | "notifications"
+      | "challengePosts",
     id?: string | number,
     id2?: string | number,
     params?: {
@@ -241,6 +249,7 @@ export class Repository<T> implements IRepository<T> {
             Like: true,
             Comment: true,
             challenge: true,
+            reposts: true,
             repostOf: {
               include: {
                 user: true,
@@ -350,6 +359,80 @@ export class Repository<T> implements IRepository<T> {
           } satisfies Prisma.PostInclude,
         } satisfies Parameters<typeof prisma.post.findMany>[0]);
         return posts as T[];
+
+      case "challengePosts":
+        return await this.prismaClient.post.findMany({
+          take: params?.take ?? undefined,
+          skip:
+            params?.skip && params?.take
+              ? (params?.skip - 1) * params?.take
+              : undefined,
+          where: {
+            challengeId: {
+              not: null,
+            },
+            ...(params?.filter
+              ? {
+                  post: {
+                    contains: params.filter,
+                    mode: "insensitive",
+                  },
+                }
+              : {}),
+          } satisfies Prisma.PostWhereInput,
+          orderBy: {
+            createdAt: params?.orderBy ?? "desc",
+          } satisfies Prisma.PostOrderByWithRelationInput,
+          include: {
+            user: true,
+            Like: true,
+            challenge: true,
+            Comment: true,
+            repostOf: {
+              include: {
+                user: true,
+              },
+            },
+          } satisfies Prisma.PostInclude,
+        } satisfies Parameters<typeof prisma.post.findMany>[0]);
+
+      case "userChallengePosts":
+        return await this.prismaClient.post.findMany({
+          take: params?.take ?? undefined,
+          skip:
+            params?.skip && params?.take
+              ? (params?.skip - 1) * params?.take
+              : undefined,
+          where: {
+            userId: id as string,
+            challengeId: {
+              not: null,
+            },
+
+            ...(params?.filter
+              ? {
+                  post: {
+                    contains: params.filter,
+                    mode: "insensitive",
+                  },
+                }
+              : {}),
+          } satisfies Prisma.PostWhereInput,
+          orderBy: {
+            createdAt: params?.orderBy ?? "desc",
+          } satisfies Prisma.PostOrderByWithRelationInput,
+          include: {
+            user: true,
+            Like: true,
+            challenge: true,
+            Comment: true,
+            repostOf: {
+              include: {
+                user: true,
+              },
+            },
+          } satisfies Prisma.PostInclude,
+        } satisfies Parameters<typeof prisma.post.findMany>[0]);
 
       // Get all user posts created today
       case "userTodayPosts":
@@ -536,6 +619,8 @@ export class Repository<T> implements IRepository<T> {
             _count: {
               select: { Post: true, Like: true, Comment: true },
             },
+            Post: true,
+            Like: true,
           } satisfies Prisma.UserInclude,
           orderBy: {
             Post: {

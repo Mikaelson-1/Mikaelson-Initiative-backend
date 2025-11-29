@@ -147,6 +147,25 @@ class ChallengeController {
     }
   }
 
+  static async getChallengePosts(req: express.Request, res: express.Response) {
+    try {
+      const result = await challengeService.getAllChallengePosts();
+      logger.info(result);
+      res.status(200).json(
+        new ApiSuccess(200, "Challenge posts gotten!", {
+          posts: result?.posts,
+          percentageOfPosts: result?.percentageOfPosts,
+          numOfDaysPosted: result?.numOfDaysPosted,
+        })
+      );
+    } catch (error) {
+      logger.error(error);
+      res
+        .status(500)
+        .json(new ApiError(500, "Something wwent wrong!,", [error]));
+    }
+  }
+
   static async deleteChallenge(req: express.Request, res: express.Response) {
     try {
       const id = req.params.id;
