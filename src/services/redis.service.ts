@@ -42,30 +42,12 @@ export default class RedisService {
   }
 
   async delByPattern(pattern: string) {
-    const stream = redis?.scanStream({
-      match: pattern,
-      count: 100,
-    });
+    const keys = await redis.keys(pattern);
 
-    return new Promise<void>((resolve, reject) => {
-      stream?.on("data", async (keys: string[]) => {
-        if (keys.length > 0) {
-          await redis?.del(...keys);
-          logger.info(
-            `Deleted ${keys.length} cache keys for pattern: ${pattern}`
-          );
-        }
-      });
+    if (!keys || keys.length === 0) return;
 
-      stream?.on("end", () => {
-        logger.info(`Finished deleting all keys for pattern: ${pattern}`);
-        resolve();
-      });
+    await redis.del(...keys);
 
-      stream?.on("error", (err) => {
-        logger.error(`Error while deleting pattern ${pattern}:` + err);
-        reject(err);
-      });
-    });
+    console.log(`Deleted ${keys.length} keys matching ${pattern}`);
   }
 }

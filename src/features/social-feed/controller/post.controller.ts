@@ -86,9 +86,15 @@ class PostController {
         orderBy: orderBy,
       });
       logger.info(posts);
-      res
-        .status(200)
-        .json(new ApiSuccess(200, "Posts fetched successfully!,", posts));
+      if (posts) {
+        res
+          .status(200)
+          .json(new ApiSuccess(200, "Posts fetched successfully!,", posts));
+      } else {
+        res
+          .status(500)
+          .json(new ApiError(500, "Something went wrong!,", []));
+      }
     } catch (error) {
       logger.error(error);
       res
