@@ -5,6 +5,7 @@ import prisma from "../config/prismadb";
 import { getDay } from "../utils/date";
 import { notificationQueue } from "../queues/notification.queue";
 import { canSendReminder } from "../utils/helper";
+import { Habit } from "../generated/prisma";
 
 /**  Here is a cron background job to send reminder emails to any user that his/her task 
  is not yet marked as completed within 24 hours */
@@ -13,7 +14,7 @@ const { today, tomorrow, yesterday } = getDay();
 // Run every 10 minutes
 cron.schedule("*/10 * * * *", async () => {
   try {
-       /** Had to comment out the log so i wont have a log every minute 😅 */
+    /** Had to comment out the log so i wont have a log every minute 😅 */
     logger.info("Checking Incompleted Tasks reminder....");
     const now = new Date();
 
@@ -38,7 +39,7 @@ cron.schedule("*/10 * * * *", async () => {
         },
       });
 
-      const tasksWithoutDueTime = tasks.filter((task) => !task.dueTime);
+      const tasksWithoutDueTime = tasks.filter((task: Habit) => !task.dueTime);
 
       for (const task of tasksWithoutDueTime) {
         try {
@@ -78,7 +79,7 @@ cron.schedule("*/10 * * * *", async () => {
         },
       });
 
-      const tasksWithoutDueTime = tasks.filter((task) => !task.dueTime);
+      const tasksWithoutDueTime = tasks.filter((task: Habit) => !task.dueTime);
       for (const task of tasksWithoutDueTime) {
         try {
           await notificationQueue.add("sendNotification", {
@@ -117,7 +118,7 @@ cron.schedule("*/10 * * * *", async () => {
         },
       });
 
-      const tasksWithoutDueTime = tasks.filter((task) => !task.dueTime);
+      const tasksWithoutDueTime = tasks.filter((task: Habit) => !task.dueTime);
 
       for (const task of tasksWithoutDueTime) {
         try {
@@ -157,7 +158,7 @@ cron.schedule("*/10 * * * *", async () => {
         },
       });
 
-      const tasksWithoutDueTime = tasks.filter((task) => !task.dueTime);
+      const tasksWithoutDueTime = tasks.filter((task: Habit) => !task.dueTime);
 
       for (const task of tasksWithoutDueTime) {
         try {
@@ -236,7 +237,7 @@ cron.schedule("*/10 * * * *", async () => {
           include: { user: true },
         });
 
-        const tasksWithDueTime = tasks.filter((task) => task.dueTime);
+        const tasksWithDueTime = tasks.filter((task: Habit) => task.dueTime);
 
         const now = new Date();
 
@@ -285,7 +286,7 @@ cron.schedule("*/10 * * * *", async () => {
           include: { user: true },
         });
 
-        const tasksWithDueTime = tasks.filter((task) => task.dueTime);
+        const tasksWithDueTime = tasks.filter((task: Habit) => task.dueTime);
 
         const now = new Date();
 
@@ -349,7 +350,7 @@ cron.schedule("*/10 * * * *", async () => {
           include: { user: true },
         });
 
-        const tasksWithDueTime = tasks.filter((task) => task.dueTime);
+        const tasksWithDueTime = tasks.filter((task: Habit) => task.dueTime);
 
         const now = new Date();
 
