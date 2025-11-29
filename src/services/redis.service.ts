@@ -6,7 +6,7 @@ export default class RedisService {
     const stringValue =
       typeof value === "string" ? value : JSON.stringify(value);
     if (ttl) {
-      await redis?.setex(key, ttl, stringValue);
+       await redis?.set(key, stringValue, { ex: ttl });
       logger.info(`${key} has been stored in redis`);
     } else {
       await redis?.set(key, stringValue);
