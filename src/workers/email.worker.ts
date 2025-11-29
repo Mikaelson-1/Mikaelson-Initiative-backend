@@ -41,5 +41,5 @@ Let’s make something extraordinary together.
 
     logger.info("Message sent:" + info.messageId);
   },
-  { connection: bullRedis, concurrency: 5 }
+  { connection: bullRedis!, concurrency: 5 }
 );

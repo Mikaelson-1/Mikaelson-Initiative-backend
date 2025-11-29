@@ -22,7 +22,7 @@ export default class UserService {
       const user = userRepository.create(data);
       if (user) {
         const email = (await user).email;
-        await emailQueue.add("sendEmail", {
+        await emailQueue?.add("sendEmail", {
           email: email,
         });
       }
@@ -134,7 +134,7 @@ export default class UserService {
       } else {
         const follow = await followRepository.create(data);
         if (follow.id) {
-          await notificationQueue.add("sendNotification", {
+          await notificationQueue?.add("sendNotification", {
             type: "follow",
             data: follow,
           });

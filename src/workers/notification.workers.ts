@@ -478,5 +478,5 @@ export const notificationWorker = new Worker<NotificationJobData>(
       }
     }
   },
-  { connection: bullRedis, concurrency: 5 }
+  { connection: bullRedis!, concurrency: 5 }
 );

@@ -43,7 +43,7 @@ cron.schedule("*/10 * * * *", async () => {
 
       for (const task of tasksWithoutDueTime) {
         try {
-          await notificationQueue.add("sendNotification", {
+          await notificationQueue?.add("sendNotification", {
             type: "task",
             data: task,
             time: "2 hours",
@@ -82,7 +82,7 @@ cron.schedule("*/10 * * * *", async () => {
       const tasksWithoutDueTime = tasks.filter((task: Habit) => !task.dueTime);
       for (const task of tasksWithoutDueTime) {
         try {
-          await notificationQueue.add("sendNotification", {
+          await notificationQueue?.add("sendNotification", {
             type: "task",
             data: task,
             time: "6 hours",
@@ -122,7 +122,7 @@ cron.schedule("*/10 * * * *", async () => {
 
       for (const task of tasksWithoutDueTime) {
         try {
-          await notificationQueue.add("sendNotification", {
+          await notificationQueue?.add("sendNotification", {
             type: "task",
             data: task,
             time: "12 hours",
@@ -162,7 +162,7 @@ cron.schedule("*/10 * * * *", async () => {
 
       for (const task of tasksWithoutDueTime) {
         try {
-          await notificationQueue.add("sendNotification", {
+          await notificationQueue?.add("sendNotification", {
             type: "task",
             data: task,
             time: "1 hour",
@@ -204,7 +204,7 @@ cron.schedule("*/10 * * * *", async () => {
 
       for (const task of tasks) {
         try {
-          await notificationQueue.add("sendNotification", {
+          await notificationQueue?.add("sendNotification", {
             type: "task",
             data: task,
             type2: "due",
@@ -247,7 +247,7 @@ cron.schedule("*/10 * * * *", async () => {
           try {
             if (now >= dueTime) {
               // Task is overdue
-              await notificationQueue.add("sendNotification", {
+              await notificationQueue?.add("sendNotification", {
                 type: "task",
                 data: task,
                 type2: "due",
@@ -304,7 +304,7 @@ cron.schedule("*/10 * * * *", async () => {
               canSendReminder(task)
             ) {
               // 2 hours before due
-              await notificationQueue.add("sendNotification", {
+              await notificationQueue?.add("sendNotification", {
                 type: "task",
                 data: task,
                 time: "2 hours",
@@ -368,7 +368,7 @@ cron.schedule("*/10 * * * *", async () => {
               canSendReminder(task)
             ) {
               // 30 minutes before due
-              await notificationQueue.add("sendNotification", {
+              await notificationQueue?.add("sendNotification", {
                 type: "task",
                 data: task,
                 time: "30 minutes",

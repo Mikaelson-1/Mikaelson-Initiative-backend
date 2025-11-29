@@ -6,21 +6,21 @@ export default class RedisService {
     const stringValue =
       typeof value === "string" ? value : JSON.stringify(value);
     if (ttl) {
-      await redis.setex(key, ttl, stringValue);
+      await redis?.setex(key, ttl, stringValue);
       logger.info(`${key} has been stored in redis`);
     } else {
-      await redis.set(key, stringValue);
+      await redis?.set(key, stringValue);
       logger.info(`${key} has been stored in redis`);
     }
   }
 
   async get<T>(key: string): Promise<T | null> {
-    const data = await redis.get(key);
+    const data = await redis?.get(key);
     if (data === null) return null;
 
-    const stringData = data.toString();
+    const stringData = data?.toString();
     try {
-      return JSON.parse(stringData) as T;
+      return JSON.parse(stringData!) as T;
     } catch {
       return stringData as T;
     }
@@ -28,41 +28,41 @@ export default class RedisService {
 
   async del(key: string) {
     if (!key) return;
-    await redis.del(key);
+    await redis?.del(key);
     logger.info(`${key} has been deleted from redis`);
   }
 
   async exist(key: string): Promise<boolean> {
-    return (await redis.exists(key)) === 1;
+    return (await redis?.exists(key)) === 1;
   }
 
   async flushdb() {
-    await redis.flushdb();
+    await redis?.flushdb();
     logger.info("Redis DB has been clear!");
   }
 
   async delByPattern(pattern: string) {
-    const stream = redis.scanStream({
+    const stream = redis?.scanStream({
       match: pattern,
       count: 100,
     });
 
     return new Promise<void>((resolve, reject) => {
-      stream.on("data", async (keys: string[]) => {
+      stream?.on("data", async (keys: string[]) => {
         if (keys.length > 0) {
-          await redis.del(...keys);
+          await redis?.del(...keys);
           logger.info(
             `Deleted ${keys.length} cache keys for pattern: ${pattern}`
           );
         }
       });
 
-      stream.on("end", () => {
+      stream?.on("end", () => {
         logger.info(`Finished deleting all keys for pattern: ${pattern}`);
         resolve();
       });
 
-      stream.on("error", (err) => {
+      stream?.on("error", (err) => {
         logger.error(`Error while deleting pattern ${pattern}:` + err);
         reject(err);
       });

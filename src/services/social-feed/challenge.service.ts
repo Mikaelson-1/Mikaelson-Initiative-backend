@@ -157,7 +157,7 @@ export default class ChallengeService {
           : 0;
 
       if (percentageOfPosts === 100) {
-        const sendUserNotification = await notificationQueue.add(
+        const sendUserNotification = await notificationQueue?.add(
           "sendNotification",
           {
             type: "challengeCompleted",
@@ -166,7 +166,7 @@ export default class ChallengeService {
             type2: "sendNotificationToUser",
           }
         );
-        const sendChallengeCreatorNotification = await notificationQueue.add(
+        const sendChallengeCreatorNotification = await notificationQueue?.add(
           "sendNotification",
           {
             type: "challengeCompleted",
@@ -206,7 +206,7 @@ export default class ChallengeService {
       await redisService.del(`Challenge`);
       const member = await memberRepository.create(data);
       if (member.id) {
-        await notificationQueue.add("sendNotification", {
+        await notificationQueue?.add("sendNotification", {
           type: "member",
           data: member,
         });
