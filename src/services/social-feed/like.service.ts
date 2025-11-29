@@ -30,7 +30,7 @@ export default class LikeService {
       const like = await likeRepository.create(data);
 
       if (like?.id) {
-        await notificationQueue.add("sendNotification", {
+        await notificationQueue?.add("sendNotification", {
           type: "like",
           data: like,
         });

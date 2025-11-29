@@ -33,7 +33,7 @@ export default class PostService {
         },
       });
 
-      await notificationQueue.add("sendNotification", {
+      await notificationQueue?.add("sendNotification", {
         type: "post",
         data: subscribers,
         data2: post,
@@ -248,7 +248,7 @@ export default class PostService {
     await redisService.del("Posts");
     const post = await postRepository.create(data);
     if (post.id) {
-      await notificationQueue.add("sendNotification", {
+      await notificationQueue?.add("sendNotification", {
         type: "repost",
         data: post,
       });
@@ -262,7 +262,7 @@ export default class PostService {
         },
       });
 
-      await notificationQueue.add("sendNotification", {
+      await notificationQueue?.add("sendNotification", {
         type: "post",
         data: subscribers,
         data2: post,

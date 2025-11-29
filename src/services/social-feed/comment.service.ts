@@ -15,7 +15,7 @@ export default class CommentService {
     await redisService.del("Comments");
     const comment = await commentRepository.create(data as any);
     if (comment?.id) {
-      await notificationQueue.add("sendNotification", {
+      await notificationQueue?.add("sendNotification", {
         type: "comment",
         data: comment,
       });
