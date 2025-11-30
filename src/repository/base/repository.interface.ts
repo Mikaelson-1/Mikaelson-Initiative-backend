@@ -31,7 +31,9 @@ export interface IRepository<T> {
       | "userLikes"
       | "userChallengePosts"
       | "getFollowingPosts"
+      | "waitList"
       | "notifications",
+
     id?: string | number,
     id2?: string | number,
     params?: {

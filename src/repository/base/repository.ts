@@ -170,7 +170,8 @@ export class Repository<T> implements IRepository<T> {
       | "userChallengePosts"
       | "getFollowingPosts"
       | "notifications"
-      | "challengePosts",
+      | "challengePosts"
+      | "waitList",
     id?: string | number,
     id2?: string | number,
     params?: {
@@ -807,6 +808,15 @@ export class Repository<T> implements IRepository<T> {
             bookmark: true,
           } satisfies Prisma.NotificationInclude,
         } satisfies Parameters<typeof prisma.notification.findMany>[0]) as Promise<
+          T[]
+        >;
+
+      case "waitList":
+        return this.prismaClient.waitList.findMany({
+          orderBy: {
+            createdAt: params?.orderBy ?? "desc",
+          } satisfies Prisma.WaitListOrderByWithRelationInput,
+        } satisfies Parameters<typeof prisma.waitList.findMany>[0]) as Promise<
           T[]
         >;
       default:

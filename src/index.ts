@@ -22,6 +22,7 @@ import "./workers/email.worker";
 import swaggerUi from "swagger-ui-express";
 import swaggerJSDoc from "swagger-jsdoc";
 import { setupSwagger } from "./swagger";
+import waitListRouter from "./routes/v1/waitList.route";
 
 const app = express();
 const server = http.createServer(app);
@@ -68,6 +69,8 @@ app.use("/api/v1/bookmarks", bookmarkRouter);
 app.use("/api/v1/tasks", taskRouter);
 
 app.use("/api/v1/notifications", notificationRouter);
+
+app.use("/api/v1/waitList", waitListRouter);
 
 const startServer = async () => {
   getHoursLeftToday();

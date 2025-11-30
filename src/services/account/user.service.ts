@@ -38,15 +38,14 @@ export default class UserService {
       if (!id) return null;
       const cachedKey = `User:${id}`;
       const cachedUser = await redisService.get(cachedKey);
-      if (cachedUser) {
+      /*if (cachedUser) {
         return cachedUser as User | T;
-      } else {
-        const user = await userRepository.findById(id, "user");
-        if (user) {
-          await redisService.set(cachedKey, user, 600);
-        }
-        return user as User;
+      }*/
+      const user = await userRepository.findById(id, "user");
+      if (user) {
+        await redisService.set(cachedKey, user, 600);
       }
+      return user as User;
     } catch (error) {
       logger.info("Something went wrong with getting user" + error);
       return null;

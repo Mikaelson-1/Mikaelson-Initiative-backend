@@ -210,3 +210,13 @@ model Subscribe {
   User        User?   @relation(fields: [userId], references: [id])
   userId      String? @db.ObjectId
 }
+
+model WaitList {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  name      String
+  email     String
+  interest  String?
+  hearing   String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
