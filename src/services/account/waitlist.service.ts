@@ -19,10 +19,20 @@ export default class WaitListService {
     hearing?: string;
   }) {
     try {
-      const waitList = await waitListRepository.create(data);
-      if (waitList) {
-        logger.info(waitList);
-        return waitList;
+      const isUserOnwaitList = await waitListRepository.findFirst(
+        data.email,
+        "",
+        "waitList"
+      );
+      logger.info("WaitList user status" + isUserOnwaitList);
+      if (isUserOnwaitList) {
+        logger.info("User is already on waitlist!");
+      } else {
+        const waitList = await waitListRepository.create(data);
+        if (waitList) {
+          logger.info(waitList);
+          return waitList;
+        }
       }
     } catch (error) {
       logger.info("Something went wrong with adding user to waitlist" + error);
@@ -36,6 +46,17 @@ export default class WaitListService {
         logger.info(waitList);
         return waitList;
       }
+    } catch (error) {
+      logger.info(
+        "Something went wrong with fetching user to waitlist" + error
+      );
+    }
+  }
+
+  async checkIfUserIsAddedToWaitList(email: string) {
+    try {
+      const waitList = await waitListRepository.findFirst("waitList", email);
+      return waitList;
     } catch (error) {
       logger.info(
         "Something went wrong with fetching user to waitlist" + error

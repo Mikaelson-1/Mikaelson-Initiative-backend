@@ -828,7 +828,7 @@ export class Repository<T> implements IRepository<T> {
   async findFirst(
     targetId: string | number,
     id: string | number,
-    type?: "like" | "bookmark" | "follow" | "challengeMember" | "",
+    type?: "like" | "bookmark" | "follow" | "challengeMember" | "waitList",
     likeWhat?: "post" | "comment"
   ): Promise<T | null> {
     switch (type) {
@@ -855,6 +855,13 @@ export class Repository<T> implements IRepository<T> {
             },
           } satisfies Prisma.BookmarkWhereInput,
         } satisfies Parameters<typeof prisma.bookmark.findFirst>[0]) as Promise<T | null>;
+
+      case "waitList":
+        return this.prismaClient.waitList.findFirst({
+          where: {
+            email: targetId as string,
+          } satisfies Prisma.WaitListWhereInput,
+        } satisfies Parameters<typeof prisma.waitList.findFirst>[0]) as Promise<T | null>;
 
       // Check if user is already following another user
       case "follow":

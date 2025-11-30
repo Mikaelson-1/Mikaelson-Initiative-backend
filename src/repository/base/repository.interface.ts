@@ -46,7 +46,7 @@ export interface IRepository<T> {
   findFirst(
     targetId: string | number,
     id: string | number,
-    type?: "like" | "bookmark" | "follow" | "challengeMember" | "",
+    type?: "like" | "bookmark" | "follow" | "challengeMember" | "waitList",
     likeWhat?: "post" | "comment"
   ): Promise<T | null>;
   update(
