@@ -37,7 +37,7 @@ export default class WaitListService {
         }
       }
     } catch (error) {
-      logger.info("Something went wrong with adding user to waitlist" + error);
+      logger.error("Something went wrong with adding user to waitlist" + error);
     }
   }
 

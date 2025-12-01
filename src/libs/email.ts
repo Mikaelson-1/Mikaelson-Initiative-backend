@@ -2,6 +2,8 @@ import { createTransporter } from "../config/nodemailer";
 import nodemailer from "nodemailer";
 import { getHoursLeftToday } from "../utils/date";
 import { logger } from "../utils";
+import { Resend } from "resend";
+const resend = new Resend("re_Gy7pVzSf_Q4ebTQrnWDsYjFxC3RodCVVt");
 
 export const sendNewUserEmail = async (email: string) => {
   const transporter = await createTransporter();
@@ -127,31 +129,31 @@ export const sendTaskOverDueEmail = async (
 };
 
 export const waitListEmail = async (email: string) => {
-  const transporter = await createTransporter();
-  const info = await transporter.sendMail({
-    from: "noreply@mikaelson-initiative-org.com",
-    to: email,
-    subject: "Welcome to the Mikaelson Community Waitlist",
-    text: `Welcome to the Mikaelson Community Waitlist!
-  
-    Hello,
-  
-  Thank you for joining the Mikaelson Community waitlist, you’re now part of a movement committed to building discipline, opportunity, and long-term transformation for young people across Africa.
-  
-  You’ll be among the first to access our platform when we go live. This includes:
-  
-  1. Early updates on our programs and tools
-  2. Priority access to new features as they roll out
-  3. Exclusive insight into how the Initiative is growing
-  
-  We’re building something designed to shift mindsets, expand capacity, and equip thousands of young people with the structure they need to create a better future.
-  
-  You’re now part of that journey.
-  More updates coming soon.
-  
-  Warm regards,
-  The Mikaelson Community Team`,
-    html: `
+  try {
+    const { data, error } = await resend.emails.send({
+      from: "Mikaelson Community  <onboarding@resend.dev>",
+      to: email,
+      subject: "Welcome to the Mikaelson Community Waitlist",
+      text: `Welcome to the Mikaelson Community Waitlist!
+
+Hello,
+
+Thank you for joining the Mikaelson Community waitlist, you're now part of a movement committed to building discipline, opportunity, and long-term transformation for young people across Africa.
+
+You'll be among the first to access our platform when we go live. This includes:
+
+1. Early updates on our programs and tools
+2. Priority access to new features as they roll out
+3. Exclusive insight into how the Initiative is growing
+
+We're building something designed to shift mindsets, expand capacity, and equip thousands of young people with the structure they need to create a better future.
+
+You're now part of that journey.
+More updates coming soon.
+
+Warm regards,
+The Mikaelson Community Team`,
+      html: `
     <div style="font-family: Arial, sans-serif; background-color: #f7f9fb; padding: 30px;">
       <div style="
         max-width: 600px;
@@ -164,44 +166,44 @@ export const waitListEmail = async (email: string) => {
         <h2 style="color: #319DE6; margin-top: 0; font-size: 24px;">
           Welcome to The Mikaelson Community Waitlist!
         </h2>
-  
+
         <p style="font-size: 15px; color: #333; line-height: 1.6;">
           Hello,
         </p>
-  
+
         <p style="font-size: 15px; color: #333; line-height: 1.6;">
           Thank you for joining the <strong>Mikaelson Community</strong> waitlist!
-          You’re now part of a movement dedicated to building discipline, structure, 
+          You're now part of a movement dedicated to building discipline, structure, 
           and long-term transformation for young people across Africa.
         </p>
-  
+
         <p style="font-size: 15px; color: #333; line-height: 1.6;">
-          As an early member, you’ll receive:
+          As an early member, you'll receive:
         </p>
-  
+
         <ul style="font-size: 15px; color: #333; line-height: 1.6; padding-left: 20px;">
           <li>Early updates on our programs and tools</li>
           <li>Priority access to new features as they roll out</li>
           <li>Exclusive insight into the growth of the Initiative</li>
         </ul>
-  
+
         <p style="font-size: 15px; color: #333; line-height: 1.6;">
-          We’re building something designed to shift mindsets, expand capacity, 
+          We're building something designed to shift mindsets, expand capacity, 
           and equip thousands of young Africans with the structure they need to build 
           a better future.
         </p>
-  
+
         <p style="font-size: 15px; color: #333; line-height: 1.6;">
-          You’re now part of that journey. More updates coming soon.
+          You're now part of that journey. More updates coming soon.
         </p>
-  
+
         <br />
-  
+
         <p style="font-size: 15px; color: #555;">
           Warm regards,<br/>
           <strong>The Mikaelson Community Team</strong>
         </p>
-  
+
         <div style="margin-top: 30px; border-top: 1px solid #eee; padding-top: 15px; text-align: center;">
           <p style="font-size: 12px; color: #999;">
             © 2025 The Mikaelson Initiative — Building excellence and opportunity across Africa.
@@ -210,7 +212,17 @@ export const waitListEmail = async (email: string) => {
       </div>
     </div>
   `,
-  });
+    });
 
-  logger.info("Message sent:" + info.messageId);
+    if (error) {
+      logger.error("Email send error:" + JSON.stringify(error, null, 2));
+      throw error;
+    }
+
+    logger.info("Message sent: " + data?.id);
+    return data;
+  } catch (error) {
+    logger.error("Failed to send waitlist email:" + error);
+    throw error;
+  }
 };
