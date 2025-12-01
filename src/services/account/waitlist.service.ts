@@ -31,7 +31,8 @@ export default class WaitListService {
         const waitList = await waitListRepository.create(data);
         if (waitList) {
           logger.info(waitList);
-          await waitListEmail(data?.email);
+          const sendEmail = await waitListEmail(data?.email);
+          logger.info(sendEmail)
           return waitList;
         }
       }
