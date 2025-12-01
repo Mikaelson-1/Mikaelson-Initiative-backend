@@ -43,6 +43,7 @@ Let’s make something extraordinary together.
         });
 
         logger.info("Message sent:" + info.messageId);
+        break;
       }
 
       case "waitListEmail": {
@@ -132,7 +133,11 @@ The Mikaelson Community Team`,
         });
 
         logger.info("Message sent:" + info.messageId);
+        break;
       }
+
+      default:
+        logger.info("Unknown email Type:" + type);
     }
   },
   { connection: bullRedis!, concurrency: 5 }

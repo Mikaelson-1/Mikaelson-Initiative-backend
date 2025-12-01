@@ -1,16 +1,11 @@
 import nodemailer from "nodemailer";
 
-export const createTransporter = () => {
+export const createTransporter = async () => {
   return nodemailer.createTransport({
     service: "gmail",
     auth: {
       user: process.env.SMTP_EMAIL,
-      pass: process.env.SMTP_PASSWORD,
+      pass: process.env.SMTP_PASSWORD, // App password
     },
-    pool: true,            
-    maxConnections: 1,
-    maxMessages: 5,
-    rateDelta: 20000,
-    rateLimit: 5,
   });
 };

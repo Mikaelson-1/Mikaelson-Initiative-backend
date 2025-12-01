@@ -4,7 +4,7 @@ import { logger } from "../../utils";
 import RedisService from "./../redis.service";
 import prisma from "../../config/prismadb";
 import crypto from "crypto";
-import { sendNewUserEmail } from "../../libs/email";
+import { sendNewUserEmail, waitListEmail } from "../../libs/email";
 import { notificationQueue } from "../../queues/notification.queue";
 import { emailQueue } from "../../queues/email.queue";
 
@@ -31,10 +31,7 @@ export default class WaitListService {
         const waitList = await waitListRepository.create(data);
         if (waitList) {
           logger.info(waitList);
-          await emailQueue?.add("sendEmail", {
-            email: data.email,
-            type: "waitListEmail",
-          });
+          await waitListEmail(data?.email);
           return waitList;
         }
       }
