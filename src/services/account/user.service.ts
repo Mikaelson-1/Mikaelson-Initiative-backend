@@ -24,6 +24,7 @@ export default class UserService {
         const email = (await user).email;
         await emailQueue?.add("sendEmail", {
           email: email,
+          type: "welcomeEmail",
         });
       }
       return user;

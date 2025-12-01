@@ -1,4 +1,4 @@
-import { Follower, Subscribe, User } from "../../generated/prisma";
+import { Follower, Subscribe, User, WaitList } from "../../generated/prisma";
 import { Repository } from "../../repository/base/repository";
 import { logger } from "../../utils";
 import RedisService from "./../redis.service";
@@ -31,6 +31,10 @@ export default class WaitListService {
         const waitList = await waitListRepository.create(data);
         if (waitList) {
           logger.info(waitList);
+          await emailQueue?.add("sendEmail", {
+            email: data.email,
+            type: "waitListEmail",
+          });
           return waitList;
         }
       }
@@ -44,6 +48,11 @@ export default class WaitListService {
       const waitList = await waitListRepository.findAll("waitList");
       if (waitList) {
         logger.info(waitList);
+
+        for (let i = 0; i < waitList.length; i++) {
+          logger.info("waitList email:" + waitList[i].email);
+        }
+
         return waitList;
       }
     } catch (error) {
