@@ -54,11 +54,11 @@ export default class PostService {
       const key = crypto.createHash("md5").update(paramString).digest("hex");
       const cachedKey = `Posts:${key}`;
       const cachedPosts = await redisService.get(cachedKey);
-      /* if (cachedPosts) {
+      if (cachedPosts) {
         logger.info(`Cached Posts:${cachedPosts}`);
         logger.info(cachedPosts);
         return cachedPosts as T;
-      }*/
+      }
       const posts = await postRepository.findAll(
         "post",
         undefined,

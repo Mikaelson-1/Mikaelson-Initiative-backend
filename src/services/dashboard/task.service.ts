@@ -29,14 +29,15 @@ export default class TaskService {
       const cachedKey = `Task:${id}`;
       const cachedTask = await redisService.get(cachedKey);
       if (cachedTask) {
+        logger.info(`Cached Task:${cachedTask}`);
         return cachedTask as T;
       } else {
-        const task = await dashboardRepository.findById(id, "task");
-        if (task) {
-          await redisService.set(cachedKey, task, 600);
-        }
-        return task as T;
+      const task = await dashboardRepository.findById(id, "task");
+      if (task) {
+        await redisService.set(cachedKey, task, 600);
       }
+      return task as T;
+    }
     } catch (error) {
       logger.info("Something went wrong with getting task" + error);
       return null;
@@ -60,6 +61,7 @@ export default class TaskService {
       const cachedKey = `Task:${key}`;
       const cachedTasks = await redisService.get(cachedKey);
       if (cachedTasks) {
+           logger.info(`Cached Tasks:${cachedTasks}`);
         return cachedTasks as Habit[] | T;
       } else {
         const tasks = await dashboardRepository.findAll(
