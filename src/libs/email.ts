@@ -131,7 +131,7 @@ export const sendTaskOverDueEmail = async (
 export const waitListEmail = async (email: string) => {
   try {
     const { data, error } = await resend.emails.send({
-      from: "Mikaelson Community  <onboarding@resend.dev>",
+      from: "Mikaelson Community  <noreply@mikaelsoninitiative.org>",
       to: email,
       subject: "Welcome to the Mikaelson Community Waitlist",
       text: `Welcome to the Mikaelson Community Waitlist!
