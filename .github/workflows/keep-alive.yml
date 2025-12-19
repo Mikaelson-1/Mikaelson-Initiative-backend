@@ -1,0 +1,16 @@
+name: Keep Render Backend Awake
+
+on:
+  schedule:
+    # Runs every 10 minutes
+    - cron: "*/10 * * * *"
+  workflow_dispatch: # allows manual trigger
+
+jobs:
+  ping-backend:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Send request to Render backend
+        run: |
+          curl -X GET https://mikaelson-initiative-backend.onrender.com/api/v1/users/welcome
