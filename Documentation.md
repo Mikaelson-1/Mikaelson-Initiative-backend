@@ -92,7 +92,7 @@ GET /api/v1/users/welcome
 
 #### Get Top Contributors
 ```http
-GET /api/v1/users/top/contributors
+GET /api/v1/users/top-contributors
 ```
 **Description:** Get users with highest engagement
 **Response:**
@@ -430,6 +430,11 @@ POST /api/v1/challenges
 GET /api/v1/challenges
 ```
 
+#### Get Challenge Posts
+```http
+GET /api/v1/challenges/posts
+```
+
 #### Add Member to Challenge
 ```http
 POST /api/v1/challenges/members
@@ -551,6 +556,32 @@ PATCH /api/v1/notifications/:id
 DELETE /api/v1/notifications/:id
 ```
 
+### 9. WaitList API (`/api/v1/waitList`)
+
+#### Get Welcome Message
+```http
+GET /api/v1/waitList/welcome
+```
+
+#### Get WaitList Entries
+```http
+GET /api/v1/waitList
+```
+
+#### Join WaitList
+```http
+POST /api/v1/waitList
+```
+**Body:**
+```json
+{
+  "name": "User Name",
+  "email": "user@example.com",
+  "interest": "Interest description",
+  "hearing": "How they heard about us"
+}
+```
+
 ## 📊 Data Models
 
 ### User Model
@@ -564,6 +595,29 @@ interface User {
   bio?: string;
   profileImage?: string;
   coverImage?: string;
+  createdAt: Date;
+  updatedAt: Date;
+}
+```
+
+### Subscribe Model
+```typescript
+interface Subscribe {
+  id: string;
+  subscribeToId: string;
+  subscriberId: string;
+  subscribedAt: Date;
+}
+```
+
+### WaitList Model
+```typescript
+interface WaitList {
+  id: string;
+  name: string;
+  email: string;
+  interest?: string;
+  hearing?: string;
   createdAt: Date;
   updatedAt: Date;
 }

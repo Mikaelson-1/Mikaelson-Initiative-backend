@@ -1,3 +1,4 @@
+import "dotenv/config";
 import express from "express";
 import http from "http";
 import cors from "cors";
@@ -36,7 +37,7 @@ app.use(express.urlencoded({ limit: "10mb", extended: true }));
 
 app.use(cookieParser());
 
-app.use(cors(corsOptions));
+app.use(cors(corsOptions) as any);
 
 app.use(limiter);
 
@@ -48,7 +49,7 @@ const options = {
       version: "1.0.0",
     },
   },
-  apis: ["./routes/v1/*.ts"],
+  apis: ["./src/routes/v1/*.ts"],
 };
 
 const swaggerSpec = swaggerJSDoc(options);
